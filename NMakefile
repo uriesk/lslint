@@ -1,0 +1,60 @@
+#
+# 1. Download "Win flex-bison" and unpack it
+# http://sourceforge.net/projects/winflexbison/
+#
+# 2. Open "Windows SDK X.X Command Prompt" (7.1 or older)
+# If you want to use Windows SDK for Windows 8, see http://support.microsoft.com/kb/2791460/
+# 
+# 3. Add 1. unpacked directory to PATH.
+#
+# 4. Run "nmake /F Makefile" to build or "nmake /F Makefile debug=1" to build debuggable binary.
+#
+# 5. Run "nmake clean /F Makefile" to cleanup.
+# 
+# NOTE: builtins.txt should be converted beforehand if needed.
+# See Makefile on how to do that.
+
+!IFNDEF DEBUG
+NODEBUG=1
+!ENDIF
+!include <win32.mak>
+
+VERSION_NUMBER = 0.4.2
+BUILD_DATE = %DATE:~-10,4%-%DATE:~-5,2%-%DATE:~-2,2%
+
+!IFDEF NODEBUG
+VERSION = $(VERSION_NUMBER)
+OPT_VARS = /TP /D_MBCS /DYY_NO_UNISTD_H /EHsc
+!ELSE
+VERSION = $(VERSION_NUMBER)debug
+OPT_VARS = /TP /D_MBCS /DYY_NO_UNISTD_H /EHsc /Fd$*.pdb
+!ENDIF
+
+LEX = win_flex
+YACC = win_bison
+
+OBJS = lslmini.tab.obj lex.yy.obj lslmini.obj symtab.obj builtins.obj builtins_txt.obj types.obj values.obj final_walk.obj operators.obj logger.obj
+
+
+start: all
+
+lex.yy.o:
+	$(LEX) lslmini.l
+
+lslmini.tab.o:
+	$(YACC) -d -v lslmini.y
+
+.c.obj:
+  $(cc) $(cdebug) $(cflags) $(cvars) $(OPT_VARS) /w $*.c
+
+lslmini.obj:
+  $(cc) $(cdebug) $(cflags) $(cvars) $(OPT_VARS) /DVERSION="""$(VERSION)""" /DBUILD_DATE="""$(BUILD_DATE)""" $*.cc
+
+symtab.obj builtins.obj builtins_txt.obj types.obj values.obj final_walk.obj operators.obj logger.obj:
+  $(cc) $(cdebug) $(cflags) $(cvars) $(OPT_VARS) $*.cc
+
+all: lex.yy.o lslmini.tab.o $(OBJS)
+	$(link) $(ldebug) $(conflags) -out:lslint.exe $(OBJS)
+
+clean:
+	del -f *.pdb *.idb lex.yy.c lslmini.tab.c lslmini.tab.h $(OBJS) lslmini.output lslint.exe

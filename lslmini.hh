@@ -25,6 +25,12 @@ void do_walk(class LLASTNode *node);
 #include "types.hh"
 #include "events.hh"
 
+#ifdef WIN32
+#define snprintf _snprintf
+#define strdup _strdup
+#pragma warning( disable : 4996 4100 4267 4127 4244 )
+#endif
+
 class LLVector {
   public:
     LLVector(float x, float y, float z) : x(x), y(y), z(z) {};
