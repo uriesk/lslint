@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include "lslmini.hh"
 #include "lslmini.tab.h"
-//#include "llconstants.hh"
 
 #ifdef WIN32
 #include <io.h>

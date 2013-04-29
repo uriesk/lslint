@@ -28,31 +28,6 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
    {NULL,                NULL},
 };
 
-const char *event_names[] = {
-   "state_entry", "state_exit",
-   "touch_start", "touch", "touch_end",
-   "collision_start", "collision", "collision_end",
-   "land_collision_start", "land_collision", "land_collision_end",
-   "timer",
-   "listen",
-   "sensor", "no_sensor",
-   "at_target", "not_at_target",
-   "at_rot_target", "not_at_rot_target",
-   "money",
-   "email",
-   "run_time_permissions",
-   "inventory",
-   "attach",
-   "dataserver",
-   "control",
-   "moving_start", "moving_end",
-   "rez",
-   "object_rez",
-   "link_message",
-   "remote_data",
-   "http_response"
-};
-
 int walklevel = 0;
 
 void print_walk( char *str ) {

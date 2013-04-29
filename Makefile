@@ -94,7 +94,7 @@ builtins_txt.cc: builtins.txt
 		sed "s/$$/\",/g" >> builtins_txt.cc
 	echo "(char*)0 };" >> builtins_txt.cc
 
-lex.yy.o: lex.yy.c lslmini.tab.h llconstants.hh
+lex.yy.o: lex.yy.c lslmini.tab.h
 
 lex.yy.o lslmini.tab.o lslmini.o symtab.o builtins.o: lslmini.hh symtab.hh ast.hh types.hh
 

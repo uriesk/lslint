@@ -23,7 +23,6 @@ void do_walk(class LLASTNode *node);
 #include "symtab.hh"
 #include "ast.hh"
 #include "types.hh"
-#include "events.hh"
 
 #ifdef WIN32
 #define snprintf _snprintf
@@ -347,7 +346,7 @@ class LLScriptEventHandler : public LLASTNode {
 
 class LLScriptEvent : public LLASTNode {
   public:
-    LLScriptEvent(EventId event_id, int num, ...) : event_id(event_id) {
+    LLScriptEvent(int num, ...) {
       va_list ap;
       va_start(ap, num);
       add_children(num, ap);
@@ -357,9 +356,6 @@ class LLScriptEvent : public LLASTNode {
     virtual void define_symbols();
     virtual char *get_node_name() { return "event"; }
     virtual LLNodeType get_node_type() { return NODE_EVENT; };
-    EventId get_event_id() { return event_id; };
-  private:
-    EventId event_id;
 };
 
 class LLScriptStatement : public LLASTNode {
