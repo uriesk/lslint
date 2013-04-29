@@ -26,6 +26,12 @@ and lots of right recursion. From a compiler perspective, it does everything
 wrong, and is not recommended as a base for anything but a lint tool.
 
 
+MODIFIED (by Makopoppo):
+added nmake support (see NMAkefile for details).
+
+dropped builtins.txt creator. if you look for new builtins.txt, see kwdb project.
+https://code.google.com/p/kwdb/
+
 
 SPECIAL THANKS:
 Strife Onizuka
