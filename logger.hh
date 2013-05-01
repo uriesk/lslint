@@ -123,6 +123,7 @@ class Logger {
     static Logger* get();
     ~Logger();
 
+    void set_path(const char *fpath) ;
     void log(LogLevel type, YYLTYPE *loc, const char *fmt, ...);
     void logv(LogLevel type, YYLTYPE *loc, const char *fmt, va_list args, ErrorCode error=(ErrorCode)0);
     void error( YYLTYPE *loc, ErrorCode error, ... );
@@ -135,6 +136,7 @@ class Logger {
     void    set_sort(bool v)     { sort = v;     }
     void    set_show_error_codes(bool v) { show_error_codes = v; }
     void    set_check_assertions(bool v) { check_assertions = v; }
+    void    set_file_path(const char *v) { file_path = v; }
 
     void    add_assertion( int line, ErrorCode error ) {
       assertions.push_back( new std::pair<int, ErrorCode>( line, error ) );
@@ -149,6 +151,7 @@ class Logger {
     bool    sort;
     bool    show_error_codes;
     bool    check_assertions;
+    const char *file_path;
     class LogMessage *last_message;
 
   private:

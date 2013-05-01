@@ -706,6 +706,7 @@ void usage(char *name) {
    printf("\t-b <file>\tLoad builtin functions from file.\n");
    printf("\t-t\t\tShow tree structure.\n");
    printf("\t-l\t\tShow line/column information as range\n");
+   printf("\t-p\t\tAdd the file path to the result\n");
    printf("\t-v\t\tBe verbose\n");
    printf("\t-S\t\tDon't sort log messages\n");
    printf("\t-#\t\tShow error codes (for debugging/testing)\n");
@@ -751,6 +752,9 @@ void version() {
    fprintf(stderr, "     \"if you see an avatar with their lights off don't flash yor lights\n");
    fprintf(stderr, "        at them because they are goons in training and will run you off\n");
    fprintf(stderr, "                                         the road and crash your client\"\n");
+   fprintf(stderr, " \n");
+   fprintf(stderr, "                                                 Modified by: Makopoppo\n");
+   fprintf(stderr, "                                       https://github.com/Makopo/lslint\n");
 }
 
 int yylex_init( void ** );
@@ -761,6 +765,7 @@ int main(int argc, char **argv) {
    int i, j;
    FILE *yyin = NULL;
    bool show_tree = false;
+   bool print_path = false;
    void *scanner;
    Logger *logger = Logger::get();
 
@@ -779,6 +784,7 @@ int main(int argc, char **argv) {
                case 'S': logger->set_sort(false);     break;
                case '#': logger->set_show_error_codes(true); break;
                case 'A': logger->set_check_assertions(true); break;
+               case 'p': print_path = true; break;
                case 'V': version(); return 0;
 #ifdef COMPILE_ENABLED                    
                case 'c': compile   = true; break;
@@ -792,6 +798,10 @@ int main(int argc, char **argv) {
             fprintf(stderr,
                   "don't know what to do with multiple file arguments.\n");
             return -1;
+         }
+         if (print_path)
+         {
+            logger->set_file_path(argv[i]);
          }
          yyin = fopen( argv[i], "r" );
          if ( yyin == NULL ) {

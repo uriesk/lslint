@@ -132,6 +132,10 @@ void Logger::logv(LogLevel level, YYLTYPE *yylloc, const char *fmt, va_list args
          break;
    }
 
+   if (file_path != NULL)
+   {
+      bp += sprintf(bp, "%s::", file_path); 
+   }
    bp += sprintf(bp, "%5s:: ", type );
    if ( yylloc != NULL ) { 
       bp += sprintf(bp, "(%3d,%3d)", yylloc->first_line, yylloc->first_column); 
