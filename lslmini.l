@@ -96,9 +96,14 @@ FS			(f|F)
 		return(IDENTIFIER);
 	}
 
-{N}+{E}				{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
-{N}*"."{N}+({E})?{FS}?	{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
-{N}+"."{N}*({E})?{FS}?	{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
+{N}+{E}{FS}			{
+		yylval->fval = (F32)atof(yytext);
+		ERROR( yylloc, E_SYNTAX_ERROR, "F can't go after a float number without a decimal point." );
+		return(FP_CONSTANT);
+	}
+{N}+{E}						{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
+{N}*"."{N}+({E})?{FS}?		{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
+{N}+"."{N}*({E})?{FS}?		{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 
 L\"(\\.|[^\\"])*\"	{
 		yylval->sval = parse_string(yytext);
