@@ -293,5 +293,4 @@ const char *Logger::warning_messages[] = {
    "Condition is always true.",
    "Condition is always false.",
    "Multiple handlers for event `%s' - only the last will execute.",
-   "Parser stack depth exceeded; SL may throw a syntax error here.", // "will" -> "may"
 };
