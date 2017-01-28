@@ -2,8 +2,7 @@
 # 1. Download "Win flex-bison" and unpack it
 # http://sourceforge.net/projects/winflexbison/
 #
-# 2. Open "Windows SDK X.X Command Prompt" (7.1 or older)
-# If you want to use Windows SDK for Windows 8, see http://support.microsoft.com/kb/2791460/
+# 2. Open "VS2015 x64 Native Tools Command Prompt" (You need the windows 8.1 SDK or later)
 # 
 # 3. Add 1. unpacked directory to PATH.
 #
@@ -17,9 +16,32 @@
 !IFNDEF DEBUG
 NODEBUG=1
 !ENDIF
-!include <win32.mak>
 
-VERSION_NUMBER = 0.4.2-m1
+# Uncomment this line to build on windows 7 or older SDK
+# WINXP=1
+
+!IFDEF WINXP
+# This file is probably optional since my fallback, but it doesn't hurt to leave support for it
+!include <win32.mak>
+!ELSE
+#############################################################
+# Replacement for win32.mak by Xenhat
+!IFNDEF NODEBUG
+cdebug = -Ox -DNDEBUG
+cvars = -D_MT -MD
+!ELSE
+cvars = -D_MT -MT
+!ENDIF
+
+cflags = -c -DCRTAPI1=_cdecl -DCRTAPI2=_cdecl -nologo -GS
+conlflags = /INCREMENTAL:NO /NOLOGO -subsystem:console,$(EXEVER)
+
+cc = cl.exe
+link = link.exe
+##############################################################
+!ENDIF
+
+VERSION_NUMBER = 0.4.3-xh
 BUILD_DATE = %DATE:~-10,4%-%DATE:~-5,2%-%DATE:~-2,2%
 
 !IFDEF NODEBUG

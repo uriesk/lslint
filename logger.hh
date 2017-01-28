@@ -2,7 +2,10 @@
 #define _LOGGER_HH 1
 
 #include <stdlib.h>
+#if !_MSC_VER
 #include <stdio.h>
+#endif // !_MSC_VER
+
 #include <vector>
 #include <utility>  // pair
 
@@ -54,7 +57,6 @@ enum ErrorCode {
     E_NOT_ALL_PATHS_RETURN,
     E_SYNTAX_ERROR,
     E_GLOBAL_INITIALIZER_NOT_CONSTANT,
-    E_NO_OPERATOR,
     E_NO_EVENT_HANDLERS,
     E_BUILTIN_LVALUE,
     E_SHADOW_CONSTANT,
@@ -98,13 +100,13 @@ enum ErrorCode {
 #define ERROR       Logger::get()->error
 
 
-#ifdef WIN32 /* hi my name is ms and i am stupid */
+#ifdef _MSC_VER
 #ifdef DEBUG_LEVEL
 #define DEBUG LOG
 #else /* not DEBUG_LEVEL */
 #define DEBUG __noop
 #endif /* not DEBUG_LEVEL */
-#else /* not WIN32 */
+#else /* not _MSC_VER */
 #ifdef DEBUG_LEVEL
 #define DEBUG LOG
 #else /* not DEBUG_LEVEL */
@@ -114,7 +116,7 @@ enum ErrorCode {
 #define DEBUG(...)
 #endif /* not __GNUC__ */
 #endif /* not DEBUG_LEVEL */
-#endif /* not WIN32 */
+#endif /* not _MSC_VER */
 
 // Logger for a script. Singleton
 class Logger {
