@@ -1,6 +1,6 @@
 `lslint` is a tool to check the syntactic and semantic validity of Second Life LSL scripts.
 
-[![Build Status](https://travis-ci.org/Ociidii-Works/lslint.svg?branch=master)](https://travis-ci.org/Ociidii-Works/lslint)
+[![Build Status](https://travis-ci.org/Makopo/lslint.svg?branch=master)](https://travis-ci.org/Makopo/lslint)
 
 #### Compiling
 * `make` should be all that's required on POSIX systems, and a solution file exists for VS2015 on Windows.
