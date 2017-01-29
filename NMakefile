@@ -1,8 +1,10 @@
 #
 # 1. Download "Win flex-bison" and unpack it
-# http://sourceforge.net/projects/winflexbison/
+#    http://sourceforge.net/projects/winflexbison/
 #
-# 2. Open "VS2015 x64 Native Tools Command Prompt" (You need the windows 8.1 SDK or later)
+# 2. Open "VS2015 x64 Native Tools Command Prompt" or other SDK shell prompt. 
+#    You need the windows 7.0 SDK or later. 
+#    For Windows XP compatible binaries, the windows 7.0 or 7.1 SDK is required.
 # 
 # 3. Add 1. unpacked directory to PATH.
 #
@@ -11,7 +13,11 @@
 # 5. Run "nmake clean /F NMakefile" to cleanup.
 # 
 # NOTE: builtins.txt should be converted beforehand if needed.
-# See line 90 in Makefile on how to do that.
+#       See line 90 in Makefile on how to do that.
+# 
+# NOTE: You may need to change the system locale to "English(US)"
+#       for successful compilation. Use `chcp` command to make sure that
+#       the active code page is 437.
 
 !IFNDEF DEBUG
 NODEBUG=1
