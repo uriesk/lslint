@@ -301,6 +301,14 @@ global_variable
 	{
     $$ = new LLScriptGlobalVariable($1, NULL);
 	}
+	| name_type '=' '-' INTEGER_CONSTANT ';'
+	{
+    $$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptIntegerConstant(-$4)));
+	}
+	| name_type '=' '-' FP_CONSTANT ';'
+	{
+    $$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptFloatConstant(-$4)));
+	}
 	| name_type '=' simple_assignable ';'
 	{
     $$ = new LLScriptGlobalVariable($1, $3);
@@ -347,6 +355,10 @@ constant
 	{
     $$ = new LLScriptIntegerConstant($1);
 	}
+	| '-' INTEGER_CONSTANT																
+	{
+    $$ = new LLScriptIntegerConstant(-$2);
+	}
 	| INTEGER_TRUE																	
 	{
     $$ = new LLScriptIntegerConstant($1);
@@ -358,6 +370,10 @@ constant
 	| FP_CONSTANT																	
 	{
     $$ = new LLScriptFloatConstant($1);
+	}
+	| '-' FP_CONSTANT																	
+	{
+    $$ = new LLScriptFloatConstant(-$2);
 	}
 	| STRING_CONSTANT
 	{

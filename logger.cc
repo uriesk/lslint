@@ -258,7 +258,7 @@ const char *Logger::error_messages[] = {
    "Returning a %s value from a %s function.",
    "Not all code paths return a value.",
    "%s", // Syntax error, bison includes all the info.
-   "Global initialize must be constant.",
+   "Global initializer must be constant.",
    "State must have at least one event handler.",
    "`%s' is a constant and cannot be used as an lvalue.",
    "`%s' is a constant and cannot be used in a variable declaration.",
