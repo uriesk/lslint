@@ -186,13 +186,13 @@ void LLASTNode::define_symbols() {
 
 void LLScriptDeclaration::define_symbols() {
    LLScriptIdentifier *identifier = (LLScriptIdentifier *)get_children();
-   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_LOCAL, get_lloc()) );
+   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_LOCAL, identifier->get_lloc()) );
    define_symbol(identifier->get_symbol());
 }
 
 void LLScriptGlobalVariable::define_symbols() {
    LLScriptIdentifier *identifier = (LLScriptIdentifier *)get_children();
-   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_GLOBAL, get_lloc()));
+   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_GLOBAL, identifier->get_lloc()));
    define_symbol(identifier->get_symbol());
 
    // if it's initialized, set it's constant value
@@ -221,7 +221,7 @@ void LLScriptGlobalFunction::define_symbols() {
 
    // define function in parent scope since we have our own
    identifier->set_symbol(
-         new LLScriptSymbol( identifier->get_name(), identifier->get_type(), SYM_FUNCTION, SYM_GLOBAL, get_lloc(), (LLScriptFunctionDec*)get_child(1) )
+         new LLScriptSymbol( identifier->get_name(), identifier->get_type(), SYM_FUNCTION, SYM_GLOBAL, identifier->get_lloc(), (LLScriptFunctionDec*)get_child(1) )
          );
    get_parent()->define_symbol(identifier->get_symbol());
 }
@@ -261,7 +261,7 @@ void LLScriptEvent::define_symbols() {
 
 void LLScriptLabel::define_symbols() {
    LLScriptIdentifier    *identifier = (LLScriptIdentifier*)get_children();
-   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_LABEL, SYM_LOCAL, get_lloc()) );
+   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_LABEL, SYM_LOCAL, identifier->get_lloc()) );
    define_symbol( identifier->get_symbol() );
 }
 
