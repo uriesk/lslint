@@ -64,7 +64,7 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
 };
 
 int walklevel = 0;
-int mono_mode = 0;
+int mono_mode = 1;
 
 void print_walk( char *str ) {
    int i;
@@ -739,8 +739,8 @@ void LLASTNode::check_symbols() {
 void usage(char *name) {
    printf("Usage: %s [options] [input]\n", name);
    printf("Options: \n");
-   printf("\t-m\t\t\tUse Mono rules for the analysis.\n");
-   printf("\t-M\t\t\tUse LSO rules for the analysis (default).\n");
+   printf("\t-m\t\t\tUse Mono rules for the analysis (default).\n");
+   printf("\t-M\t\t\tUse LSO rules for the analysis.\n");
    printf("\t-b <file>\tLoad builtin functions from file.\n");
    printf("\t-t\t\tShow tree structure.\n");
    printf("\t-l\t\tShow line/column information as range\n");

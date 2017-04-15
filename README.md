@@ -33,6 +33,9 @@ wrong, and is not recommended as a base for anything but a lint tool.
 * Makefile-less VS2015 support (more cpp hybridization was necessary)
     * Side effects includes x86_64 binary, x86 is possible still
 
+#### Sei-Lisa
+* added Mono mode (-m to Mono(default), -M to LSL2)
+
 #### Special Thanks
 * Strife Onizuka
 * Howie Lament
