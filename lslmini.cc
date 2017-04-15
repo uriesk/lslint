@@ -64,6 +64,7 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
 };
 
 int walklevel = 0;
+int mono_mode = 0;
 
 void print_walk( char *str ) {
    int i;
@@ -628,7 +629,7 @@ void LLScriptJumpStatement::determine_type() {
    LLScriptIdentifier *id = (LLScriptIdentifier *) get_child(0);
    id->resolve_symbol( SYM_LABEL );
    type = id->get_type();
-   if ( id->get_symbol() != NULL && id->get_symbol()->get_references() == 2 ) {
+   if ( !mono_mode && id->get_symbol() != NULL && id->get_symbol()->get_references() == 2 ) {
       ERROR( HERE, W_MULTIPLE_JUMPS_FOR_LABEL, id->get_symbol()->get_name() );
    }
 }
@@ -738,6 +739,8 @@ void LLASTNode::check_symbols() {
 void usage(char *name) {
    printf("Usage: %s [options] [input]\n", name);
    printf("Options: \n");
+   printf("\t-m\t\t\tUse Mono rules for the analysis.\n");
+   printf("\t-M\t\t\tUse LSO rules for the analysis (default).\n");
    printf("\t-b <file>\tLoad builtin functions from file.\n");
    printf("\t-t\t\tShow tree structure.\n");
    printf("\t-l\t\tShow line/column information as range\n");
@@ -812,6 +815,8 @@ int main(int argc, char **argv) {
       if ( argv[i][0] == '-' ) {
          for ( j = 1 ; argv[i][j]; ++j ) {
             switch( argv[i][j] ) {
+               case 'm': mono_mode = 1; break;
+               case 'M': mono_mode = 0; break;
                case 'b': builtins_file = argv[++i]; goto nextarg;
                case 't': show_tree = true; break;
                case 'l': logger->set_show_end(true);  break;

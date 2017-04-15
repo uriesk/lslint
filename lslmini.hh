@@ -16,6 +16,7 @@ typedef float F32;
 
 extern class LLScriptScript *script;
 extern int walklevel;
+extern int mono_mode;
 void print_walk(char *str);
 void do_walk(class LLASTNode *node);
 
