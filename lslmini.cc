@@ -158,12 +158,12 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
          }
       }
 
-      // Otherwise, ask our parent to define it  
+      // Otherwise, ask our parent to define it
    } else if ( parent ) {
 
       parent->define_symbol(symbol);
 
-      // .. but if we don't have a parent, we're in trouble.  
+      // .. but if we don't have a parent, we're in trouble.
    } else {
 
       throw "nowhere to define symbol!";
@@ -197,7 +197,7 @@ void LLScriptGlobalVariable::define_symbols() {
    define_symbol(identifier->get_symbol());
 
    // if it's initialized, set it's constant value
-   if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE ) 
+   if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE )
       identifier->get_symbol()->set_constant_value( get_child(1)->get_child(0)->get_constant_value() );
 }
 
@@ -213,7 +213,7 @@ void LLScriptState::define_symbols() {
       return;
 
    identifier = (LLScriptIdentifier *)node;
-   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_STATE, SYM_GLOBAL, identifier->get_lloc()) );    
+   identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_STATE, SYM_GLOBAL, identifier->get_lloc()) );
    define_symbol( identifier->get_symbol() );
 }
 
@@ -294,7 +294,7 @@ static char* operation_str(int operation) {
       case BOOLEAN_OR:    return "||";
       case SHIFT_LEFT:    return "<<";
       case SHIFT_RIGHT:   return ">>";
-      default:            
+      default:
                           if ( isprint(operation) ) {
                              buf[0] = operation;
                              buf[1] = 0;
@@ -310,7 +310,7 @@ void LLScriptExpression::determine_type() {
    else {
       type = get_child(0)->get_type()->get_result_type( operation, get_child(1) ? get_child(1)->get_type() : NULL );
       if ( type == NULL ) {
-         ERROR( HERE, E_INVALID_OPERATOR, get_child(0)->get_type()->get_node_name(), operation_str(operation), get_child(1) ? get_child(1)->get_type()->get_node_name() : "" );  
+         ERROR( HERE, E_INVALID_OPERATOR, get_child(0)->get_type()->get_node_name(), operation_str(operation), get_child(1) ? get_child(1)->get_type()->get_node_name() : "" );
          type = get_child(0)->get_type();
       } else {
          if ( operation == '=' || operation == INC_OP || operation == DEC_OP ) {
@@ -739,8 +739,8 @@ void LLASTNode::check_symbols() {
 void usage(char *name) {
    printf("Usage: %s [options] [input]\n", name);
    printf("Options: \n");
-   printf("\t-m\t\t\tUse Mono rules for the analysis (default).\n");
-   printf("\t-M\t\t\tUse LSO rules for the analysis.\n");
+   printf("\t-m\t\tUse Mono rules for the analysis (default).\n");
+   printf("\t-M\t\tUse LSO rules for the analysis.\n");
    printf("\t-b <file>\tLoad builtin functions from file.\n");
    printf("\t-t\t\tShow tree structure.\n");
    printf("\t-l\t\tShow line/column information as range\n");
@@ -807,7 +807,7 @@ int main(int argc, char **argv) {
    void *scanner;
    Logger *logger = Logger::get();
 
-#ifdef COMPILE_ENABLED  
+#ifdef COMPILE_ENABLED
    bool compile   = true;
 #endif
 
@@ -826,7 +826,7 @@ int main(int argc, char **argv) {
                case 'A': logger->set_check_assertions(true); break;
                case 'p': print_path = true; break;
                case 'V': version(); return 0;
-#ifdef COMPILE_ENABLED                    
+#ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;
                case 'C': compile   = false; break;
 #endif /* COMPILE_ENABLED */
@@ -886,7 +886,7 @@ nextarg:
 
          script->generate_cil();
       }
-#endif /* COMPILE_ENABLED */    
+#endif /* COMPILE_ENABLED */
    } else {
       Logger::get()->report();
    }
