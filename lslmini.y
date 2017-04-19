@@ -81,6 +81,10 @@
 %token					JUMP
 %token					RETURN
 
+%token					SWITCH
+%token					CASE
+%token					BREAK
+
 %token					STATE_ENTRY
 %token					STATE_EXIT
 %token					TOUCH_START
@@ -231,6 +235,9 @@
 %type <expression>		expression
 %type <expression>		unaryexpression
 %type <expression>		typecast
+// TODO
+%type <statement>		switch_body
+%type <statement>		case_block
 
 %nonassoc INTEGER_CONSTANT FP_CONSTANT // solves 'expression FP_CONSTANT' conflicts
 %right '=' MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN
@@ -614,9 +621,61 @@ statement
 	{
 		$$ = new LLScriptWhileStatement($3, $5);
 	}
+	| SWITCH '(' expression ')' '{' switch_body '}'
+	{
+		$$ = new LLScriptSwitchStatement($3, $6);
+	}
+	| SWITCH '(' expression ')' '{' statements switch_body '}'
+	{
+		ERROR(&@6, W_STATEMENTS_BEFORE_CASE);
+		$$ = new LLScriptSwitchStatement($3, $7);
+	}
+	| BREAK ';'
+	{
+		$$ = new LLScriptBreakStatement();
+	}
 	| error ';'
 	{
 		$$ = new LLScriptStatement(0);
+	}
+	;
+
+switch_body
+	: case_block
+	{
+		$$ = $1;
+	}
+	| switch_body case_block
+	{
+		$1->add_next_sibling($2);
+		$$ = $1;
+	}
+	;
+
+case_block
+	: STATE_DEFAULT ':'
+	{
+		$$ = new LLScriptCaseBlock(NULL, NULL);
+	}
+	| STATE_DEFAULT ':' statements
+	{
+		$$ = new LLScriptCaseBlock(NULL, $3);
+	}
+	| STATE_DEFAULT compound_statement // FS syntax extension
+	{
+		$$ = new LLScriptCaseBlock(NULL, $2);
+	}
+	| CASE expression ':'
+	{
+		$$ = new LLScriptCaseBlock($2, NULL);
+	}
+	| CASE expression ':' statements
+	{
+		$$ = new LLScriptCaseBlock($2, $4);
+	}
+	| CASE expression compound_statement // FS syntax extension
+	{
+		$$ = new LLScriptCaseBlock($2, $3);
 	}
 	;
 

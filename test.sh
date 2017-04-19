@@ -14,6 +14,8 @@ for f in scripts/*.lsl scripts/*/*.lsl ; do
     ./lslint -i -\# -A "$f" > ./test.run.txt 2>&1
   elif [ "${f#scripts/uep/}" != "$f" ] ; then
     ./lslint -u -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/switch/}" != "$f" ] ; then
+    ./lslint -w -\# -A "$f" > ./test.run.txt 2>&1
   else
     # test in both mono and lso modes
     ./lslint -m -\# -A "$f" > ./test.run.txt 2>&1 \

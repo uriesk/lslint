@@ -79,10 +79,10 @@ enum ErrorCode {
     E_INVALID_EVENT,                   // 10030
     E_DUPLICATE_DECLARATION_EVENT,     // 10031
     E_MULTIPLE_EVENT_HANDLERS,         // 10032
-    E_LAST,
+    E_LAST
 
 
-
+    ,
     // warnings
     W_WARNING               = 20000,
     W_SHADOW_DECLARATION,              // 20001
@@ -99,7 +99,8 @@ enum ErrorCode {
     W_CONDITION_ALWAYS_FALSE,          // 20012
     W_removed_2,                       // 20013
     W_UNUSED_EVENT_PARAMETER,          // 20014
-    W_LAST,
+    W_STATEMENTS_BEFORE_CASE,          // 20015
+    W_LAST
 
 };
 

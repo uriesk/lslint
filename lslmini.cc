@@ -67,6 +67,7 @@ static int walklevel = 0;
 bool mono_mode = true;
 bool skip_preproc = false;
 bool warn_unused_evparam = false;
+bool switch_stmt = false;
 
 void print_walk( char *str ) {
    int i;
@@ -751,6 +752,8 @@ void usage(char *name) {
    printf("\t-i-\t\tDon't handle preproc. directives specially (default)\n");
    printf("\t-u\t\tWarn about unused event parameters\n");
    printf("\t-u-\t\tDon't warn about unused event parameters (default)\n");
+   printf("\t-w\t\tEnable switch statements\n");
+   printf("\t-w-\t\tDisable switch statements (default)\n");
 #ifdef COMPILE_ENABLED
    printf("\t-c\t\tCompile.\t\t\t(default)\n");
    printf("\t-C\t\tDon't compile.\n");
@@ -843,6 +846,12 @@ int main(int argc, char **argv) {
                      warn_unused_evparam = false;
                      j++;
                   } else warn_unused_evparam = true;
+                  break;
+               case 'w':
+                  if (argv[i][j+1] == '-') {
+                     switch_stmt = false;
+                     j++;
+                  } else switch_stmt = true;
                   break;
 #ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;

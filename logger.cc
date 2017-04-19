@@ -299,4 +299,5 @@ const char *Logger::warning_messages[] = {
    "Condition is always false.",                                      // 20012
    "",                                                                // 20013 (unused)
    "Unused event parameter `%s'.",                                    // 20014
+   "Statements before the first case label won't be executed.",       // 20015
 };
