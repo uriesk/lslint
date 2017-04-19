@@ -100,11 +100,13 @@ builtins_txt.cc: builtins.txt
 
 lex.yy.o: lex.yy.c lslmini.tab.h
 
-lex.yy.o lslmini.tab.o lslmini.o symtab.o builtins.o: lslmini.hh symtab.hh ast.hh types.hh
+lex.yy.o lslmini.tab.o lslmini.o symtab.o builtins.o: lslmini.hh symtab.hh ast.hh types.hh lslmini.tab.h
 
 logger.o: lslmini.tab.h logger.hh
 
-types.o: types.hh lslmini.hh
+types.o: types.hh lslmini.hh lslmini.tab.h
+
+values.o final_walk.o operators.o: lslmini.tab.h
 
 lslmini.tab.c lslmini.tab.h: lslmini.y
 	$(YACC) -d lslmini.y
