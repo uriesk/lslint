@@ -739,9 +739,9 @@ void LLASTNode::check_symbols() {
 void usage(char *name) {
    printf("Usage: %s [options] [input]\n", name);
    printf("Options: \n");
-   printf("\t-m\t\tUse Mono rules for the analysis (default).\n");
-   printf("\t-M\t\tUse LSO rules for the analysis.\n");
-   printf("\t-b <file>\tLoad builtin functions from file.\n");
+   printf("\t-m\t\tUse Mono rules for the analysis (default)\n");
+   printf("\t-m-\t\tUse LSO rules for the analysis\n");
+   printf("\t-b <file>\tLoad builtin functions from file\n");
    printf("\t-t\t\tShow tree structure.\n");
    printf("\t-l\t\tShow line/column information as range\n");
    printf("\t-p\t\tAdd the file path to the result\n");
@@ -815,8 +815,12 @@ int main(int argc, char **argv) {
       if ( argv[i][0] == '-' ) {
          for ( j = 1 ; argv[i][j]; ++j ) {
             switch( argv[i][j] ) {
-               case 'm': mono_mode = 1; break;
-               case 'M': mono_mode = 0; break;
+               case 'm':
+                  if (argv[i][j+1] == '-') {
+                     mono_mode = 0;
+                     j++;
+                  } else mono_mode = 1;
+                  break;
                case 'b': builtins_file = argv[++i]; goto nextarg;
                case 't': show_tree = true; break;
                case 'l': logger->set_show_end(true);  break;
