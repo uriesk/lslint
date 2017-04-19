@@ -25,8 +25,6 @@ char *parse_string(char *input);
 %}
 
 
-D           [0-9]
-BD			[-]?[0-9]
 N			[0-9]
 L			[a-zA-Z_]
 H			[a-fA-F0-9]
@@ -36,6 +34,8 @@ FS			(f|F)
  /* exclusive state to eat comments of any length without overflowing any buffers */
 %x COMMENT
 %x C_COMMENT
+ /* exclusive state to skip preprocessor commands */
+%x PREPROC
 
 %%
 %{
@@ -48,14 +48,14 @@ FS			(f|F)
 		ErrorCode e = (ErrorCode) strtoul( yytext+3, NULL, 10 );
 		LOG( LOG_INFO, yylloc, "Adding assertion for E%d.", (int)e );
 		Logger::get()->add_assertion( yylloc->first_line, e );
-}
-<COMMENT>.          { /* eat comments */ }
-<COMMENT>\n         { BEGIN 0; LLOC_LINES(1); LLOC_STEP(); } 
+	}
+<COMMENT>.			{ /* eat comments */ }
+<COMMENT>\n			{ BEGIN 0; LLOC_LINES(1); LLOC_STEP(); }
 
-"/*"              { BEGIN C_COMMENT; }
-<C_COMMENT>"*/"   { BEGIN 0; LLOC_STEP(); }
-<C_COMMENT>\n     { LLOC_LINES(1); LLOC_STEP(); }
-<C_COMMENT>.      { LLOC_STEP(); }
+"/*"				{ BEGIN C_COMMENT; }
+<C_COMMENT>"*/"		{ BEGIN 0; LLOC_STEP(); }
+<C_COMMENT>\n		{ LLOC_LINES(1); LLOC_STEP(); }
+<C_COMMENT>.		{ LLOC_STEP(); }
 
 "integer"			{ return(INTEGER); }
 "float"				{ return(FLOAT_TYPE); }
@@ -77,18 +77,18 @@ FS			(f|F)
 "do"				{ return(DO); }
 "while"				{ return(WHILE); }
 
-"."						{ return(PERIOD); }
+"."					{ return(PERIOD); }
 
 
 0[xX]{H}+			{ yylval->ival = strtoul(yytext, NULL, 0);  return(INTEGER_CONSTANT); }
-{N}+					{ yylval->ival = strtoul(yytext, NULL, 10); return(INTEGER_CONSTANT); }
+{N}+				{ yylval->ival = strtoul(yytext, NULL, 10); return(INTEGER_CONSTANT); }
 
 "TRUE"				{ yylval->ival = 1; return(INTEGER_TRUE); }
 "FALSE"				{ yylval->ival = 0; return(INTEGER_FALSE); }
 
 {L}({L}|{N})*		{ yylval->sval = new char[strlen(yytext) + 1]; strcpy(yylval->sval, yytext); return(IDENTIFIER); }
 
-{N}+{E}									{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
+{N}+{E}				{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 {N}*"."{N}+({E})?{FS}?	{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 {N}+"."{N}*({E})?{FS}?	{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 
@@ -133,8 +133,12 @@ L?\"(\\.|[^\\"])*\"	{ yylval->sval = parse_string(yytext); return(STRING_CONSTAN
 "<<"				{ return(SHIFT_LEFT);  }
 ">>"				{ return(SHIFT_RIGHT); }
 
+^[ \t\f\v\r]*"#"	{ LLOC_STEP(); if (skip_preproc) { BEGIN PREPROC; } }
+<PREPROC>[^\n]*\\\r?\n	{ LLOC_LINES(1); LLOC_STEP(); }
+<PREPROC>[^\n]*\n	{ BEGIN 0; LLOC_LINES(1); LLOC_STEP(); }
 
-\n                  { LLOC_LINES(1); LLOC_STEP(); } 
+
+\n					{ LLOC_LINES(1); LLOC_STEP(); }
 .					{ LLOC_STEP(); /* ignore bad characters */ }
 
 %%

@@ -1,32 +1,32 @@
 %{
-    #include "lslmini.hh"
-    #include "logger.hh"
-    #include <stdio.h>
-    #include <string.h>
-    //int yylex(YYSTYPE *yylval_param, YYLTYPE *yylloc_param);
-    extern int yylex (YYSTYPE * yylval_param,YYLTYPE * yylloc_param , void *yyscanner);
+	#include "lslmini.hh"
+	#include "logger.hh"
+	#include <stdio.h>
+	#include <string.h>
+	//int yylex(YYSTYPE *yylval_param, YYLTYPE *yylloc_param);
+	extern int yylex (YYSTYPE * yylval_param,YYLTYPE * yylloc_param , void *yyscanner);
 
-    LLScriptScript *script;
-    int yyerror( YYLTYPE*, void *, const char * );
-    #define MAKEID(type,id,pos) new LLScriptIdentifier(TYPE(type), (id), &(pos))
-    #define EVENTERR(type,prototype) new LLScriptEvent((type), 0); LOG( LOG_CONTINUE, NULL, "event prototype must match: " # prototype);
+	LLScriptScript *script;
+	int yyerror( YYLTYPE*, void *, const char * );
+	#define MAKEID(type,id,pos) new LLScriptIdentifier(TYPE(type), (id), &(pos))
+	#define EVENTERR(type,prototype) new LLScriptEvent((type), 0); LOG( LOG_CONTINUE, NULL, "event prototype must match: " # prototype);
 
 
-    #define LSLINT_STACK_OVERFLOW_AT 150
-    inline int _yylex( YYSTYPE * yylval, YYLTYPE *yylloc, void *yyscanner, int stack ) {
-        return yylex( yylval, yylloc, yyscanner );
-    }
-    #define yylex(a,b,c) _yylex(a, b, c,  (int)(yyssp - yyss))
-        
+	#define LSLINT_STACK_OVERFLOW_AT 150
+	inline int _yylex( YYSTYPE * yylval, YYLTYPE *yylloc, void *yyscanner, int stack ) {
+		return yylex( yylval, yylloc, yyscanner );
+	}
+	#define yylex(a,b,c) _yylex(a, b, c,  (int)(yyssp - yyss))
 
-    // Same as bison's default, but update global position so we don't have
-    // to pass it in every time we make a branch
-    # define YYLLOC_DEFAULT(Current, Rhs, N)                \
-        ((Current).first_line   = (Rhs)[1].first_line,       \
-         (Current).first_column = (Rhs)[1].first_column,     \
-         (Current).last_line    = (Rhs)[N].last_line,        \
-         (Current).last_column  = (Rhs)[N].last_column,      \
-         LLASTNode::set_glloc(&(Current)))
+
+	// Same as bison's default, but update global position so we don't have
+	// to pass it in every time we make a branch
+	# define YYLLOC_DEFAULT(Current, Rhs, N)				\
+		((Current).first_line   = (Rhs)[1].first_line,		\
+		 (Current).first_column = (Rhs)[1].first_column,	\
+		 (Current).last_line    = (Rhs)[N].last_line,		\
+		 (Current).last_column  = (Rhs)[N].last_column,		\
+		 LLASTNode::set_glloc(&(Current)))
 
 %}
 
@@ -52,7 +52,7 @@
 	class LLScriptStatement			*statement;
 	class LLScriptGlobalFunction	*global_funcs;
 	class LLScriptFunctionDec		*global_decl;
-	class LLScriptEventDec		*global_event_decl;
+	class LLScriptEventDec			*global_event_decl;
 	class LLScriptState				*state;
 	class LLScriptGlobalStorage		*global_store;
 	class LLScriptScript			*script;
@@ -104,7 +104,7 @@
 %token					OBJECT_REZ
 %token					LINK_MESSAGE
 %token					REMOTE_DATA
-%token                  HTTP_RESPONSE
+%token					HTTP_RESPONSE
 
 %token <sval>			IDENTIFIER
 %token <sval>			STATE_DEFAULT
@@ -247,829 +247,828 @@
 %%
 
 lscript_program
-	: globals states		
+	: globals states
 	{
-    script = new LLScriptScript($1, $2);
+		script = new LLScriptScript($1, $2);
 	}
-	| states		
+	| states
 	{
-    script = new LLScriptScript(NULL, $1);
+		script = new LLScriptScript(NULL, $1);
 	}
 	;
-	
+
 globals
-	: global																
+	: global
 	{
-    DEBUG( LOG_DEBUG_SPAM, NULL, "** global\n");
-    $$ = $1;
+		DEBUG( LOG_DEBUG_SPAM, NULL, "** global\n");
+		$$ = $1;
 	}
 	| global globals
 	{
-    if ( $1 ) {
-        DEBUG( LOG_DEBUG_SPAM, NULL, "** global [%p,%p] globals [%p,%p]\n", $1->get_prev(), $1->get_next(), $2->get_prev(), $2->get_next());
-        $1->add_next_sibling($2);
-        $$ = $1;
-    } else {
-        $$ = $2;
-    }
+		if ( $1 ) {
+			DEBUG( LOG_DEBUG_SPAM, NULL, "** global [%p,%p] globals [%p,%p]\n", $1->get_prev(), $1->get_next(), $2->get_prev(), $2->get_next());
+			$1->add_next_sibling($2);
+			$$ = $1;
+		} else {
+			$$ = $2;
+		}
 	}
 	;
 
 global
 	: global_variable
 	{
-    $$ = new LLScriptGlobalStorage($1, NULL);
+		$$ = new LLScriptGlobalStorage($1, NULL);
 	}
 	| global_function
 	{
-    $$ = new LLScriptGlobalStorage(NULL, $1);
+		$$ = new LLScriptGlobalStorage(NULL, $1);
 	}
 	;
-	
+
 name_type
 	: typename IDENTIFIER
 	{
-    $$ = new LLScriptIdentifier($1, $2, &@2);
+		$$ = new LLScriptIdentifier($1, $2, &@2);
 	}
 	;
 
 global_variable
-	: name_type ';'	
+	: name_type ';'
 	{
-    $$ = new LLScriptGlobalVariable($1, NULL);
+		$$ = new LLScriptGlobalVariable($1, NULL);
 	}
 	| name_type '=' '-' INTEGER_CONSTANT ';'
 	{
-    $$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptIntegerConstant(-$4)));
+		$$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptIntegerConstant(-$4)));
 	}
 	| name_type '=' '-' FP_CONSTANT ';'
 	{
-    $$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptFloatConstant(-$4)));
+		$$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptFloatConstant(-$4)));
 	}
 	| name_type '=' simple_assignable ';'
 	{
-    $$ = new LLScriptGlobalVariable($1, $3);
+		$$ = new LLScriptGlobalVariable($1, $3);
 	}
-    | name_type '=' expression ';'
-    {
-    ERROR(&@3, E_GLOBAL_INITIALIZER_NOT_CONSTANT);
-    $$ = NULL;
-    }
-    | name_type '=' error ';'
-    {
-    $$ = NULL;
-    }
+	| name_type '=' expression ';'
+	{
+		ERROR(&@3, E_GLOBAL_INITIALIZER_NOT_CONSTANT);
+		$$ = NULL;
+	}
+	| name_type '=' error ';'
+	{
+		$$ = NULL;
+	}
 	;
 
 simple_assignable
 	: simple_assignable_no_list
 	{
-    $$ = $1;
+		$$ = $1;
 	}
 	| list_constant
 	{
-    $$ = $1;
+		$$ = $1;
 	}
 	;
 
 simple_assignable_no_list
-	: IDENTIFIER																	
+	: IDENTIFIER
 	{
-    $$ = new LLScriptSimpleAssignable(new LLScriptIdentifier($1));
+		$$ = new LLScriptSimpleAssignable(new LLScriptIdentifier($1));
 	}
-	| constant																		
+	| constant
 	{
-    $$ = new LLScriptSimpleAssignable($1);
+		$$ = new LLScriptSimpleAssignable($1);
 	}
-	| special_constant	
+	| special_constant
 	{
-    $$ = $1; //new LLScriptSimpleAssignable($1);
+		$$ = $1; //new LLScriptSimpleAssignable($1);
 	}
 	;
 
 constant
-	: INTEGER_CONSTANT																
+	: INTEGER_CONSTANT
 	{
-    $$ = new LLScriptIntegerConstant($1);
+		$$ = new LLScriptIntegerConstant($1);
 	}
-	| '-' INTEGER_CONSTANT																
+	| '-' INTEGER_CONSTANT
 	{
-    $$ = new LLScriptIntegerConstant(-$2);
+		$$ = new LLScriptIntegerConstant(-$2);
 	}
-	| INTEGER_TRUE																	
+	| INTEGER_TRUE
 	{
-    $$ = new LLScriptIntegerConstant($1);
+		$$ = new LLScriptIntegerConstant($1);
 	}
-	| INTEGER_FALSE																	
+	| INTEGER_FALSE
 	{
-    $$ = new LLScriptIntegerConstant($1);
+		$$ = new LLScriptIntegerConstant($1);
 	}
-	| FP_CONSTANT																	
+	| FP_CONSTANT
 	{
-    $$ = new LLScriptFloatConstant($1);
+		$$ = new LLScriptFloatConstant($1);
 	}
-	| '-' FP_CONSTANT																	
+	| '-' FP_CONSTANT
 	{
-    $$ = new LLScriptFloatConstant(-$2);
+		$$ = new LLScriptFloatConstant(-$2);
 	}
 	| STRING_CONSTANT
 	{
-    $$ = new LLScriptStringConstant($1);
+		$$ = new LLScriptStringConstant($1);
 	}
 	;
 
 special_constant
 	: vector_constant
 	{
-    $$ = $1;
+		$$ = $1;
 	}
 	| quaternion_constant
 	{
-    $$ = $1;
+		$$ = $1;
 	}
 	;
 
 vector_constant
 	: '<' simple_assignable ',' simple_assignable ',' simple_assignable '>'
 	{
-    $$ = new LLScriptSimpleAssignable(new LLScriptVectorConstant($2, $4, $6));
+		$$ = new LLScriptSimpleAssignable(new LLScriptVectorConstant($2, $4, $6));
 	}
 	| ZERO_VECTOR
 	{
-    $$ = new LLScriptSimpleAssignable(new LLScriptVectorConstant(0.0, 0.0, 0.0));
+		$$ = new LLScriptSimpleAssignable(new LLScriptVectorConstant(0.0, 0.0, 0.0));
 	}
 	;
-	
+
 quaternion_constant
 	: '<' simple_assignable ',' simple_assignable ',' simple_assignable ',' simple_assignable '>'
 	{
-    $$ = new LLScriptSimpleAssignable(new LLScriptQuaternionConstant($2, $4, $6, $8));
+		$$ = new LLScriptSimpleAssignable(new LLScriptQuaternionConstant($2, $4, $6, $8));
 	}
 	| ZERO_ROTATION
 	{
-    $$ = new LLScriptSimpleAssignable(new LLScriptQuaternionConstant(0.0, 0.0, 0.0, 0.0));
+		$$ = new LLScriptSimpleAssignable(new LLScriptQuaternionConstant(0.0, 0.0, 0.0, 0.0));
 	}
 	;
 
 list_constant
 	: '[' list_entries ']'
 	{
-    $$ = new LLScriptSimpleAssignable(new LLScriptListConstant($2));
+		$$ = new LLScriptSimpleAssignable(new LLScriptListConstant($2));
 	}
 	| '[' ']'
 	{
-    $$ = new LLScriptSimpleAssignable(new LLScriptListConstant((LLScriptSimpleAssignable*)NULL));
+		$$ = new LLScriptSimpleAssignable(new LLScriptListConstant((LLScriptSimpleAssignable*)NULL));
 	}
 	;
 
 list_entries
-	: list_entry																	
+	: list_entry
 	{
-    $$ = $1;
+		$$ = $1;
 	}
 	| list_entry ',' list_entries
 	{
-    if ( $1 ) {
-        $1->add_next_sibling($3);
-        $$ = $1;
-    } else {
-        $$ = $3;
-    }
+		if ( $1 ) {
+			$1->add_next_sibling($3);
+			$$ = $1;
+		} else {
+			$$ = $3;
+		}
 	}
 	;
 
 list_entry
 	: simple_assignable_no_list
 	{
-    $$ = $1;
-	}
-	;	
-
-typename
-	: INTEGER																		
-	{
-    $$ = TYPE(LST_INTEGER);
-	}
-	| FLOAT_TYPE																			
-	{
-    $$ = TYPE(LST_FLOATINGPOINT);
-	}
-	| STRING																		
-	{  
-    $$ = TYPE(LST_STRING);
-	}
-	| LLKEY																		
-	{  
-    $$ = TYPE(LST_KEY);
-	}
-	| VECTOR																		
-	{  
-    $$ = TYPE(LST_VECTOR);
-	}
-	| QUATERNION																	
-	{  
-    $$ = TYPE(LST_QUATERNION);
-	}
-	| LIST																			
-	{
-    $$ = TYPE(LST_LIST);
+		$$ = $1;
 	}
 	;
-	
+
+typename
+	: INTEGER
+	{
+		$$ = TYPE(LST_INTEGER);
+	}
+	| FLOAT_TYPE
+	{
+		$$ = TYPE(LST_FLOATINGPOINT);
+	}
+	| STRING
+	{
+		$$ = TYPE(LST_STRING);
+	}
+	| LLKEY
+	{
+		$$ = TYPE(LST_KEY);
+	}
+	| VECTOR
+	{
+		$$ = TYPE(LST_VECTOR);
+	}
+	| QUATERNION
+	{
+		$$ = TYPE(LST_QUATERNION);
+	}
+	| LIST
+	{
+		$$ = TYPE(LST_LIST);
+	}
+	;
+
 global_function
 	: IDENTIFIER '(' ')' compound_statement
-	{  
-    $$ = new LLScriptGlobalFunction( MAKEID(LST_NULL, $1, @1), NULL, $4 );
+	{
+		$$ = new LLScriptGlobalFunction( MAKEID(LST_NULL, $1, @1), NULL, $4 );
 	}
 	| name_type '(' ')' compound_statement
 	{
-    $$ = new LLScriptGlobalFunction( $1, NULL, $4 );
+		$$ = new LLScriptGlobalFunction( $1, NULL, $4 );
 	}
 	| IDENTIFIER '(' function_parameters ')' compound_statement
 	{
-    $$ = new LLScriptGlobalFunction( MAKEID(LST_NULL, $1, @1), $3, $5 );
+		$$ = new LLScriptGlobalFunction( MAKEID(LST_NULL, $1, @1), $3, $5 );
 	}
 	| name_type '(' function_parameters ')' compound_statement
-	{  
-    $$ = new LLScriptGlobalFunction( $1, $3, $5 );
+	{
+		$$ = new LLScriptGlobalFunction( $1, $3, $5 );
 	}
 	;
-	
+
 function_parameters
-	: function_parameter															
-	{  
-    $$ = $1;
+	: function_parameter
+	{
+		$$ = $1;
 	}
-	| function_parameter ',' function_parameters									
-	{  
-      if ( $1 ) {
-          $1->push_child($3->get_children());
-          //delete $3;
-          $$ = $1;
-      } else {
-          $$ = $3;
-      }
+	| function_parameter ',' function_parameters
+	{
+		if ( $1 ) {
+			$1->push_child($3->get_children());
+			//delete $3;
+			$$ = $1;
+		} else {
+			$$ = $3;
+		}
 	}
 	;
-	
+
 function_parameter
-	: typename IDENTIFIER															
-	{  
-    $$ = new LLScriptFunctionDec( new LLScriptIdentifier($1, $2, &@2) );
+	: typename IDENTIFIER
+	{
+		$$ = new LLScriptFunctionDec( new LLScriptIdentifier($1, $2, &@2) );
 	}
 	;
 
 event_parameters
-	: event_parameter															
-	{  
-    $$ = $1;
+	: event_parameter
+	{
+		$$ = $1;
 	}
-	| event_parameter ',' event_parameters									
-	{  
-      if ( $1 ) {
-          $1->push_child($3->get_children());
-          //delete $3;
-          $$ = $1;
-      } else {
-          $$ = $3;
-      }
+	| event_parameter ',' event_parameters
+	{
+		if ( $1 ) {
+			$1->push_child($3->get_children());
+			//delete $3;
+			$$ = $1;
+		} else {
+			$$ = $3;
+		}
 	}
 	;
-	
+
 event_parameter
-	: typename IDENTIFIER															
-	{  
-    $$ = new LLScriptEventDec( new LLScriptIdentifier($1, $2, &@2) );
+	: typename IDENTIFIER
+	{
+		$$ = new LLScriptEventDec( new LLScriptIdentifier($1, $2, &@2) );
 	}
 	;
 
 states
-	: default																		
-	{  
-    $$ = $1;
+	: default
+	{
+		$$ = $1;
 	}
 	| default other_states
-	{  
-    if ( $1 ) {
-        DEBUG( LOG_DEBUG_SPAM, NULL, "---- default [%p,%p] other_states [%p,%p]\n", $1->get_prev(), $1->get_next(), $2->get_prev(), $2->get_next());
-        $1->add_next_sibling($2);
-        $$ = $1;
-    } else {
-        $$ = $2;
-    }
+	{
+		if ( $1 ) {
+			DEBUG( LOG_DEBUG_SPAM, NULL, "---- default [%p,%p] other_states [%p,%p]\n", $1->get_prev(), $1->get_next(), $2->get_prev(), $2->get_next());
+			$1->add_next_sibling($2);
+			$$ = $1;
+		} else {
+			$$ = $2;
+		}
 	}
 	;
-	
+
 other_states
-	: state																			
-	{  
-    //DEBUG(200,"--(%d)-- state\n", yylloc.first_line);
-    $$ = $1;
+	: state
+	{
+		//DEBUG(200,"--(%d)-- state\n", yylloc.first_line);
+		$$ = $1;
 	}
-	| state other_states 															
-	{  
-    //DEBUG(200,"--(%d)-- state other_states\n", yylloc.first_line);
-    if ( $1 ) {
-        $1->add_next_sibling($2);
-        $$ = $1;
-    } else {
-        $$ = $2;
-    }
+	| state other_states
+	{
+		//DEBUG(200,"--(%d)-- state other_states\n", yylloc.first_line);
+		if ( $1 ) {
+			$1->add_next_sibling($2);
+			$$ = $1;
+		} else {
+			$$ = $2;
+		}
 	}
 	;
-	
+
 default
-	: STATE_DEFAULT '{' state_body '}'													
-	{  
-    $$ = new LLScriptState( NULL, $3 );
+	: STATE_DEFAULT '{' state_body '}'
+	{
+		$$ = new LLScriptState( NULL, $3 );
 	}
-    | STATE_DEFAULT '{' '}'
-    {
-    ERROR( &@1, E_NO_EVENT_HANDLERS );
-    $$ = new LLScriptState( NULL, NULL );
-    }
+	| STATE_DEFAULT '{' '}'
+	{
+		ERROR( &@1, E_NO_EVENT_HANDLERS );
+		$$ = new LLScriptState( NULL, NULL );
+	}
 	;
-	
+
 state
-	: STATE IDENTIFIER '{' state_body '}'											
-	{  
-    $$ = new LLScriptState( MAKEID(LST_NULL, $2, @2), $4 );
+	: STATE IDENTIFIER '{' state_body '}'
+	{
+		$$ = new LLScriptState( MAKEID(LST_NULL, $2, @2), $4 );
 	}
-    | STATE IDENTIFIER '{' '}'
-    {
-    ERROR( &@1, E_NO_EVENT_HANDLERS );
-    $$ = new LLScriptState( NULL, NULL );
-    }
-	;
-	
-state_body	
-	: event																			
-	{  
-    $$ = $1;
-	}
-	| event state_body															
-	{  
-    if ( $1 ) {
-        $1->add_next_sibling($2);
-        $$ = $1;
-    } else {
-        $$ = $2;
-    }
+	| STATE IDENTIFIER '{' '}'
+	{
+		ERROR( &@1, E_NO_EVENT_HANDLERS );
+		$$ = new LLScriptState( NULL, NULL );
 	}
 	;
-	
+
+state_body
+	: event
+	{
+		$$ = $1;
+	}
+	| event state_body
+	{
+		if ( $1 ) {
+			$1->add_next_sibling($2);
+			$$ = $1;
+		} else {
+			$$ = $2;
+		}
+	}
+	;
+
 event
 	: IDENTIFIER '(' ')' compound_statement
-	{  
-    $$ = new LLScriptEventHandler(MAKEID(LST_NULL, $1, @1), NULL, $4);
+	{
+		$$ = new LLScriptEventHandler(MAKEID(LST_NULL, $1, @1), NULL, $4);
 	}
 	| IDENTIFIER '(' event_parameters ')' compound_statement
-	{  
-    $$ = new LLScriptEventHandler(MAKEID(LST_NULL, $1, @1), $3, $5);
+	{
+		$$ = new LLScriptEventHandler(MAKEID(LST_NULL, $1, @1), $3, $5);
 	}
-   ;
-	
+	;
+
 compound_statement
-	: '{' '}'																		
-	{  
-    $$ = new LLScriptStatement(0);
+	: '{' '}'
+	{
+		$$ = new LLScriptStatement(0);
 	}
-	| '{' statements '}'															
-	{  
-    $$ = new LLScriptCompoundStatement($2);
+	| '{' statements '}'
+	{
+		$$ = new LLScriptCompoundStatement($2);
 	}
 	;
-	
+
 statements
-	: statement																		
-	{  
-    //DEBUG( LOG_DEBUG_SPAM, NULL, "statement %d\n", yylloc.first_line );
-    $$ = $1;
+	: statement
+	{
+		//DEBUG( LOG_DEBUG_SPAM, NULL, "statement %d\n", yylloc.first_line );
+		$$ = $1;
 	}
-	| statements statement															
-	{  
-    if ( $1 ) {
-        $1->add_next_sibling($2);
-        $$ = $1;
-    } else {
-        $$ = $2;
-    }
+	| statements statement
+	{
+		if ( $1 ) {
+			$1->add_next_sibling($2);
+			$$ = $1;
+		} else {
+			$$ = $2;
+		}
 	}
 	;
-	
+
 statement
-	: ';'																			
-	{  
-    $$ = new LLScriptStatement(0);
+	: ';'
+	{
+		$$ = new LLScriptStatement(0);
 	}
-	| STATE IDENTIFIER ';'						
-	{  
-    $$ = new LLScriptStateStatement(MAKEID(LST_NULL, $2, @2));
+	| STATE IDENTIFIER ';'
+	{
+		$$ = new LLScriptStateStatement(MAKEID(LST_NULL, $2, @2));
 	}
-	| STATE STATE_DEFAULT ';'						
-	{  
-    $$ = new LLScriptStateStatement();
+	| STATE STATE_DEFAULT ';'
+	{
+		$$ = new LLScriptStateStatement();
 	}
-	| JUMP IDENTIFIER ';'						
-	{  
-    $$ = new LLScriptJumpStatement(MAKEID(LST_NULL, $2, @2));
+	| JUMP IDENTIFIER ';'
+	{
+		$$ = new LLScriptJumpStatement(MAKEID(LST_NULL, $2, @2));
 	}
-	| '@' IDENTIFIER ';'						
-	{  
-    $$ = new LLScriptLabel(MAKEID(LST_NULL, $2, @2));
+	| '@' IDENTIFIER ';'
+	{
+		$$ = new LLScriptLabel(MAKEID(LST_NULL, $2, @2));
 	}
-	| RETURN expression ';'						
-	{  
-    $$ = new LLScriptReturnStatement($2);
+	| RETURN expression ';'
+	{
+		$$ = new LLScriptReturnStatement($2);
 	}
-	| RETURN ';'								
-	{  
-    $$ = new LLScriptReturnStatement(NULL);
+	| RETURN ';'
+	{
+		$$ = new LLScriptReturnStatement(NULL);
 	}
-	| expression ';'							
-	{  
-    $$ = new LLScriptStatement($1);
+	| expression ';'
+	{
+		$$ = new LLScriptStatement($1);
 	}
 	| declaration ';'
-	{  
-    $$ = $1;
+	{
+		$$ = $1;
 	}
-	| compound_statement						
-	{ 
-    $$ = $1;
+	| compound_statement
+	{
+		$$ = $1;
 	}
-	| IF '(' expression ')' statement	%prec LOWER_THAN_ELSE			
-	{  
-    $$ = new LLScriptIfStatement($3, $5, NULL);
+	| IF '(' expression ')' statement	%prec LOWER_THAN_ELSE
+	{
+		$$ = new LLScriptIfStatement($3, $5, NULL);
 	}
-	| IF '(' expression ')' statement ELSE statement					
-	{  
-    $$ = new LLScriptIfStatement($3, $5, $7);
+	| IF '(' expression ')' statement ELSE statement
+	{
+		$$ = new LLScriptIfStatement($3, $5, $7);
 	}
-	| FOR '(' forexpressionlist ';' expression ';' forexpressionlist ')' statement	
-	{  
-    $$ = new LLScriptForStatement($3, $5, $7, $9);
+	| FOR '(' forexpressionlist ';' expression ';' forexpressionlist ')' statement
+	{
+		$$ = new LLScriptForStatement($3, $5, $7, $9);
 	}
-	| DO statement WHILE '(' expression ')' ';' 
-	{  
-    $$ = new LLScriptDoStatement($2, $5);
+	| DO statement WHILE '(' expression ')' ';'
+	{
+		$$ = new LLScriptDoStatement($2, $5);
 	}
-	| WHILE '(' expression ')' statement		
-	{  
-    $$ = new LLScriptWhileStatement($3, $5);
+	| WHILE '(' expression ')' statement
+	{
+		$$ = new LLScriptWhileStatement($3, $5);
 	}
-    | error ';'
-    {
-    $$ = new LLScriptStatement(0);
-    }
+	| error ';'
+	{
+		$$ = new LLScriptStatement(0);
+	}
 	;
-	
+
 declaration
-	: typename IDENTIFIER						
-	{  
-    $$ = new LLScriptDeclaration(new LLScriptIdentifier($1, $2, &@2), NULL);
+	: typename IDENTIFIER
+	{
+		$$ = new LLScriptDeclaration(new LLScriptIdentifier($1, $2, &@2), NULL);
 	}
-	| typename IDENTIFIER '=' expression		
-	{  
-    DEBUG( LOG_DEBUG_SPAM, NULL, "= %s\n", $4->get_node_name());
-    $$ = new LLScriptDeclaration(new LLScriptIdentifier($1, $2, &@2), $4);
+	| typename IDENTIFIER '=' expression
+	{
+		DEBUG( LOG_DEBUG_SPAM, NULL, "= %s\n", $4->get_node_name());
+		$$ = new LLScriptDeclaration(new LLScriptIdentifier($1, $2, &@2), $4);
 	}
 	;
 
 forexpressionlist
-	: /* empty */								
-	{  
-    //$$ = new LLScriptExpression(0, NULL, NULL);
-    $$ = NULL;
-	}
-	| nextforexpressionlist						
+	: /* empty */
 	{
-    $$ = $1;
+		//$$ = new LLScriptExpression(0, NULL, NULL);
+		$$ = NULL;
+	}
+	| nextforexpressionlist
+	{
+		$$ = $1;
 	}
 	;
 
 nextforexpressionlist
-	: expression								
-	{ 
-    $$ = $1;
-	}
-	| expression ',' nextforexpressionlist		
+	: expression
 	{
-    if ( $1 ) {
-        $1->add_next_sibling($3);
-        $$ = $1;
-    } else {
-        $$ = $3;
-    }
+		$$ = $1;
+	}
+	| expression ',' nextforexpressionlist
+	{
+		if ( $1 ) {
+			$1->add_next_sibling($3);
+			$$ = $1;
+		} else {
+			$$ = $3;
+		}
 	}
 	;
 
 funcexpressionlist
-	: /* empty */								
-	{  
-    //$$ = new LLScriptExpression(0);
-    $$ = NULL;
-	}
-	| nextfuncexpressionlist						
+	: /* empty */
 	{
-    $$ = $1;
+		//$$ = new LLScriptExpression(0);
+		$$ = NULL;
+	}
+	| nextfuncexpressionlist
+	{
+		$$ = $1;
 	}
 	;
 
 nextfuncexpressionlist
-	: expression								
-	{  
-    $$ = $1;
-	}
-	| expression ',' nextfuncexpressionlist		
+	: expression
 	{
-    if ( $1 ) {
-        $1->add_next_sibling($3);
-        $$ = $1;
-    } else {
-        $$ = $3;
-    }
+		$$ = $1;
+	}
+	| expression ',' nextfuncexpressionlist
+	{
+		if ( $1 ) {
+			$1->add_next_sibling($3);
+			$$ = $1;
+		} else {
+			$$ = $3;
+		}
 	}
 	;
 
 listexpressionlist
-	: /* empty */								
-	{  
-    //$$ = new LLScriptExpression(0);
-    //$$ = NULL;
-    $$ = NULL;
-	}
-	| nextlistexpressionlist						
+	: /* empty */
 	{
-    $$ = $1;
+		//$$ = new LLScriptExpression(0);
+		//$$ = NULL;
+		$$ = NULL;
+	}
+	| nextlistexpressionlist
+	{
+		$$ = $1;
 	}
 	;
 
 nextlistexpressionlist
-	: expression								
-	{  
-    $$ = $1;
-	}
-	| expression ',' nextlistexpressionlist		
+	: expression
 	{
-    if ($1) {
-        $1->add_next_sibling($3);
-        $$ = $1;
-    } else {
-        $$ = $3;
-    }
+		$$ = $1;
+	}
+	| expression ',' nextlistexpressionlist
+	{
+		if ($1) {
+			$1->add_next_sibling($3);
+			$$ = $1;
+		} else {
+			$$ = $3;
+		}
 	}
 	;
 
 expression
-	: unaryexpression							
-	{  
-    $$ = $1;
+	: unaryexpression
+	{
+		$$ = $1;
 	}
-	| lvalue '=' expression						
-	{  
-    $$ = new LLScriptExpression( $1, '=', $3 );
+	| lvalue '=' expression
+	{
+		$$ = new LLScriptExpression( $1, '=', $3 );
 	}
-	| lvalue ADD_ASSIGN expression				
-	{  
-    // TODO: clean these up
-    $$ = new LLScriptExpression( $1,'=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '+', $3) );
+	| lvalue ADD_ASSIGN expression
+	{
+		// TODO: clean these up
+		$$ = new LLScriptExpression( $1,'=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '+', $3) );
 	}
-	| lvalue SUB_ASSIGN expression				
-	{  
-    $$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '-', $3) );
+	| lvalue SUB_ASSIGN expression
+	{
+		$$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '-', $3) );
 	}
-	| lvalue MUL_ASSIGN expression				
-	{  
-    $$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '*', $3) );
+	| lvalue MUL_ASSIGN expression
+	{
+		$$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '*', $3) );
 	}
-	| lvalue DIV_ASSIGN expression				
-	{  
-    $$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '/', $3) );
+	| lvalue DIV_ASSIGN expression
+	{
+		$$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '/', $3) );
 	}
-	| lvalue MOD_ASSIGN expression				
-	{  
-    $$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '%', $3) );
+	| lvalue MOD_ASSIGN expression
+	{
+		$$ = new LLScriptExpression( $1, '=', new LLScriptExpression(new LLScriptLValueExpression(new LLScriptIdentifier((LLScriptIdentifier*)$1->get_child(0))), '%', $3) );
 	}
-	| expression EQ expression					
-	{  
-    $$ = new LLScriptExpression( $1, EQ, $3 );
+	| expression EQ expression
+	{
+		$$ = new LLScriptExpression( $1, EQ, $3 );
 	}
-	| expression NEQ expression					
-	{  
-    $$ = new LLScriptExpression( new LLScriptExpression( $1, EQ, $3 ), '!' );
+	| expression NEQ expression
+	{
+		$$ = new LLScriptExpression( new LLScriptExpression( $1, EQ, $3 ), '!' );
 	}
-	| expression LEQ expression					
-	{  
-    // if ( A <= B ) B > A
-    $$ = new LLScriptExpression( $3, '>', $1 );
+	| expression LEQ expression
+	{
+		// if ( A <= B ) B > A
+		$$ = new LLScriptExpression( $3, '>', $1 );
 	}
-	| expression GEQ expression					
-	{  
-    // if ( A >= B ) B < A
-    $$ = new LLScriptExpression( $3, '<', $1 );
+	| expression GEQ expression
+	{
+		// if ( A >= B ) B < A
+		$$ = new LLScriptExpression( $3, '<', $1 );
 	}
-	| expression '<' expression					
-	{  
-    $$ = new LLScriptExpression( $1, '<', $3 );
+	| expression '<' expression
+	{
+		$$ = new LLScriptExpression( $1, '<', $3 );
 	}
-	| expression '>' expression					
-	{  
-    $$ = new LLScriptExpression( $1, '>', $3 );
+	| expression '>' expression
+	{
+		$$ = new LLScriptExpression( $1, '>', $3 );
 	}
-	| expression '+' expression					
-	{  
-    $$ = new LLScriptExpression( $1, '+', $3 );
+	| expression '+' expression
+	{
+		$$ = new LLScriptExpression( $1, '+', $3 );
 	}
-	| expression '-' expression					
-	{  
-    $$ = new LLScriptExpression( $1, '-', $3 );
+	| expression '-' expression
+	{
+		$$ = new LLScriptExpression( $1, '-', $3 );
 	}
-	| expression '*' expression					
-	{  
-    $$ = new LLScriptExpression( $1, '*', $3 );
+	| expression '*' expression
+	{
+		$$ = new LLScriptExpression( $1, '*', $3 );
 	}
-	| expression '/' expression					
-	{  
-    $$ = new LLScriptExpression(  $1, '/',  $3  );
+	| expression '/' expression
+	{
+		$$ = new LLScriptExpression(  $1, '/',  $3  );
 	}
-	| expression '%' expression					
-	{  
-    $$ = new LLScriptExpression(  $1, '%',  $3  );
+	| expression '%' expression
+	{
+		$$ = new LLScriptExpression(  $1, '%',  $3  );
 	}
-	| expression '&' expression					
-	{  
-    $$ = new LLScriptExpression(  $1, '&',  $3  );
+	| expression '&' expression
+	{
+		$$ = new LLScriptExpression(  $1, '&',  $3  );
 	}
-	| expression '|' expression					
-	{  
-    $$ = new LLScriptExpression(  $1, '|',  $3  );
+	| expression '|' expression
+	{
+		$$ = new LLScriptExpression(  $1, '|',  $3  );
 	}
-	| expression '^' expression					
-	{  
-    $$ = new LLScriptExpression(  $1, '^',  $3  );
+	| expression '^' expression
+	{
+		$$ = new LLScriptExpression(  $1, '^',  $3  );
 	}
-	| expression BOOLEAN_AND expression			
-	{  
-    $$ = new LLScriptExpression(  $1, BOOLEAN_AND,  $3  );
+	| expression BOOLEAN_AND expression
+	{
+		$$ = new LLScriptExpression(  $1, BOOLEAN_AND,  $3  );
 	}
-	| expression BOOLEAN_OR expression			
-	{  
-    $$ = new LLScriptExpression(  $1, BOOLEAN_OR,  $3  );
+	| expression BOOLEAN_OR expression
+	{
+		$$ = new LLScriptExpression(  $1, BOOLEAN_OR,  $3  );
 	}
 	| expression SHIFT_LEFT expression
 	{
-    $$ = new LLScriptExpression(  $1, SHIFT_LEFT,  $3  );
+		$$ = new LLScriptExpression(  $1, SHIFT_LEFT,  $3  );
 	}
 	| expression SHIFT_RIGHT expression
 	{
-    $$ = new LLScriptExpression(  $1, SHIFT_RIGHT,  $3  );
+		$$ = new LLScriptExpression(  $1, SHIFT_RIGHT,  $3  );
 	}
-     ;
+	;
 
 unaryexpression
-	: '-' expression						
-	{  
-    $$ = new LLScriptExpression( $2, '-' );
-	}
-	| '!' expression							
-	{  
-    $$ = new LLScriptExpression(  $2 , '!' );
-	}
-	| '~' expression							
-	{  
-    $$ = new LLScriptExpression(  $2 , '~' );
-	}
-	| INC_OP lvalue							
-	{  
-    $$ = new LLScriptExpression(  $2 , INC_OP );
-	}
-	| DEC_OP lvalue							
-	{  
-    $$ = new LLScriptExpression(  $2 , DEC_OP );
-	}
-	| typecast				
+	: '-' expression
 	{
-    $$ = $1;
+		$$ = new LLScriptExpression( $2, '-' );
+	}
+	| '!' expression
+	{
+		$$ = new LLScriptExpression(  $2 , '!' );
+	}
+	| '~' expression
+	{
+		$$ = new LLScriptExpression(  $2 , '~' );
+	}
+	| INC_OP lvalue
+	{
+		$$ = new LLScriptExpression(  $2 , INC_OP );
+	}
+	| DEC_OP lvalue
+	{
+		$$ = new LLScriptExpression(  $2 , DEC_OP );
+	}
+	| typecast
+	{
+		$$ = $1;
 	}
 	| unarypostfixexpression
-	{  
-    $$ = $1;
+	{
+		$$ = $1;
 	}
-	| '(' expression ')'						
-	{  
-    $$ = new LLScriptExpression($2, 0);
+	| '(' expression ')'
+	{
+		$$ = new LLScriptExpression($2, 0);
 	}
-    ;
+	;
 
 typecast
-	: '(' typename ')' lvalue				
+	: '(' typename ')' lvalue
 	{
-    $$ = new LLScriptTypecastExpression($2, $4);
+		$$ = new LLScriptTypecastExpression($2, $4);
 	}
-	| '(' typename ')' constant				
+	| '(' typename ')' constant
 	{
-    $$ = new LLScriptTypecastExpression($2, $4);
+		$$ = new LLScriptTypecastExpression($2, $4);
 	}
-	| '(' typename ')' unarypostfixexpression				
+	| '(' typename ')' unarypostfixexpression
 	{
-    $$ = new LLScriptTypecastExpression($2, $4);
+		$$ = new LLScriptTypecastExpression($2, $4);
 	}
-	| '(' typename ')' '(' expression ')'				
+	| '(' typename ')' '(' expression ')'
 	{
-    $$ = new LLScriptTypecastExpression($2, $5);
+		$$ = new LLScriptTypecastExpression($2, $5);
 	}
 	;
 
 unarypostfixexpression
-	: vector_initializer 					
-	{  
-    DEBUG( LOG_DEBUG_SPAM, NULL, "vector intializer..");
-    $$ = $1;
-	}
-	| quaternion_initializer					
+	: vector_initializer
 	{
-    $$ = $1;
+		DEBUG( LOG_DEBUG_SPAM, NULL, "vector intializer..");
+		$$ = $1;
 	}
-	| list_initializer							
-	{  
-    $$ = $1;
+	| quaternion_initializer
+	{
+		$$ = $1;
 	}
-	| lvalue									
-	{  
-    $$ = $1;
+	| list_initializer
+	{
+		$$ = $1;
 	}
-	| lvalue INC_OP							
-	{  
-    $$ = new LLScriptExpression(  $1 , INC_OP );
+	| lvalue
+	{
+		$$ = $1;
 	}
-	| lvalue DEC_OP							
-	{  
-    $$ = new LLScriptExpression(  $1 , DEC_OP );
+	| lvalue INC_OP
+	{
+		$$ = new LLScriptExpression(  $1 , INC_OP );
 	}
-	| IDENTIFIER '(' funcexpressionlist ')'			
-	{  
-    if ( $3 != NULL ) {
-      $$ = new LLScriptFunctionExpression( new LLScriptIdentifier($1), $3 );
-    } else {
-      $$ = new LLScriptFunctionExpression( new LLScriptIdentifier($1) );
-    }
-
+	| lvalue DEC_OP
+	{
+		$$ = new LLScriptExpression(  $1 , DEC_OP );
 	}
-	| PRINT '(' expression ')'			
-	{  
-    /* FIXME: What does this do? */
+	| IDENTIFIER '(' funcexpressionlist ')'
+	{
+		if ( $3 != NULL ) {
+			$$ = new LLScriptFunctionExpression( new LLScriptIdentifier($1), $3 );
+		} else {
+			$$ = new LLScriptFunctionExpression( new LLScriptIdentifier($1) );
+		}
 	}
-	| constant									
-	{  
-    $$ = new LLScriptExpression($1);
+	| PRINT '(' expression ')'
+	{
+		/* FIXME: What does this do? */
+	}
+	| constant
+	{
+		$$ = new LLScriptExpression($1);
 	}
 	;
 
 vector_initializer
 	: '<' expression ',' expression ',' expression '>'	%prec INITIALIZER
 	{
-    $$ = new LLScriptVectorExpression($2, $4, $6);
+		$$ = new LLScriptVectorExpression($2, $4, $6);
 	}
 	| ZERO_VECTOR
 	{
-    $$ = new LLScriptVectorExpression();
+		$$ = new LLScriptVectorExpression();
 	}
 	;
 
 quaternion_initializer
 	: '<' expression ',' expression ',' expression ',' expression '>' %prec INITIALIZER
 	{
-    $$ = new LLScriptQuaternionExpression($2, $4, $6, $8);
+		$$ = new LLScriptQuaternionExpression($2, $4, $6, $8);
 	}
 	| ZERO_ROTATION
 	{
-    $$ = new LLScriptQuaternionExpression();
+		$$ = new LLScriptQuaternionExpression();
 	}
 	;
 
 list_initializer
 	: '[' listexpressionlist ']' %prec INITIALIZER
-	{  
-    $$ = new LLScriptListExpression($2);
+	{
+		$$ = new LLScriptListExpression($2);
 	}
 	;
 
-lvalue 
-	: IDENTIFIER								
-	{  
-    $$ = new LLScriptLValueExpression(new LLScriptIdentifier($1));
+lvalue
+	: IDENTIFIER
+	{
+		$$ = new LLScriptLValueExpression(new LLScriptIdentifier($1));
 	}
 	| IDENTIFIER PERIOD IDENTIFIER
 	{
-    $$ = new LLScriptLValueExpression(new LLScriptIdentifier($1, $3));
+		$$ = new LLScriptLValueExpression(new LLScriptIdentifier($1, $3));
 	}
 	;
-		
+
 %%
 
 int yyerror( YYLTYPE *lloc, void *scanner, const char *message ) {
-    ERROR( lloc, E_SYNTAX_ERROR, message );
-    return 0;
+	ERROR( lloc, E_SYNTAX_ERROR, message );
+	return 0;
 }
 
