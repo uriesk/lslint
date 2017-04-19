@@ -34,6 +34,8 @@ FS			(f|F)
  /* exclusive state to eat comments of any length without overflowing any buffers */
 %x COMMENT
 %x C_COMMENT
+ /* exclusive state to skip preprocessor commands */
+%x PREPROC
 
 %%
 %{
@@ -130,6 +132,10 @@ L?\"(\\.|[^\\"])*\"	{ yylval->sval = parse_string(yytext); return(STRING_CONSTAN
 "||"				{ return(BOOLEAN_OR);	}
 "<<"				{ return(SHIFT_LEFT);  }
 ">>"				{ return(SHIFT_RIGHT); }
+
+^[ \t\f\v\r]*"#"	{ LLOC_STEP(); if (skip_preproc) { BEGIN PREPROC; } }
+<PREPROC>[^\n]*\\\r?\n	{ LLOC_LINES(1); LLOC_STEP(); }
+<PREPROC>[^\n]*\n	{ BEGIN 0; LLOC_LINES(1); LLOC_STEP(); }
 
 
 \n					{ LLOC_LINES(1); LLOC_STEP(); }

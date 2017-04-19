@@ -65,6 +65,7 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
 
 int walklevel = 0;
 int mono_mode = 1;
+int skip_preproc = 0;
 
 void print_walk( char *str ) {
    int i;
@@ -749,6 +750,8 @@ void usage(char *name) {
    printf("\t-S\t\tDon't sort log messages\n");
    printf("\t-#\t\tShow error codes (for debugging/testing)\n");
    printf("\t-A\t\tCheck error assertions (for debugging/testing)\n");
+   printf("\t-i\t\tTreat preprocessor directives as comments\n");
+   printf("\t-i-\t\tDon't handle preproc. directives specially (default)\n");
 #ifdef COMPILE_ENABLED
    printf("\t-c\t\tCompile.\t\t\t(default)\n");
    printf("\t-C\t\tDon't compile.\n");
@@ -830,6 +833,12 @@ int main(int argc, char **argv) {
                case 'A': logger->set_check_assertions(true); break;
                case 'p': print_path = true; break;
                case 'V': version(); return 0;
+               case 'i':
+                  if (argv[i][j+1] == '-') {
+                     skip_preproc = 0;
+                     j++;
+                  } else skip_preproc = 1;
+                  break;
 #ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;
                case 'C': compile   = false; break;
