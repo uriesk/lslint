@@ -99,7 +99,7 @@ void LLScriptEventHandler::final_pre_checks() {
       }
    }
    if (found > 1 && is_last) {
-      ERROR( HERE, W_MULTIPLE_EVENT_HANDLERS, id->get_name() );
+      ERROR( HERE, E_MULTIPLE_EVENT_HANDLERS, id->get_name() );
    }
 
    // check parameters
