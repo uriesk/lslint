@@ -236,61 +236,69 @@ LogMessage::~LogMessage() {
 
 /// ERROR MESSAGE
 
+/****************************************************************************
+  IMPORTANT: Do not add messages here without having added the corresponding
+             enum first in logger.hh; see caveats there.
+ ****************************************************************************/
+
 const char *Logger::error_messages[] = {
-   "ERROR",
-   "Duplicate declaration of `%s'; previously declared at (%d, %d).",
-   "Invalid operator: %s %s %s.",
-   "`%s' is deprecated.",
-   "`%s' is deprecated, use %s instead.",
-   "Attempting to use `%s' as a %s, but it is a %s.",
-   "`%s' is undeclared.",
-   "`%s' is undeclared; did you mean %s?",
-   "Invalid member: `%s.%s'.",
-   "Trying to access `%s.%s', but `%1$s' is a %3$s",
-   "Attempting to access `%s.%s', but `%1$s' is not a vector or rotation.",
-   "Passing %s as argument %d of `%s' which is declared as `%s %s'.",
-   "Too many arguments to function `%s'.",
-   "Too few arguments to function `%s'.",
-   "Functions cannot change state.",
-   "`%s %s' assigned a %s value.",
-   "%s member assigned %s value (must be float or integer).",
-   "Event handlers cannot return a value.",
-   "Returning a %s value from a %s function.",
-   "Not all code paths return a value.",
-   "%s", // Syntax error, bison includes all the info.
-   "Global initializer must be constant.",
-   "State must have at least one event handler.",
-   "`%s' is a constant and cannot be used as an lvalue.",
-   "`%s' is a constant and cannot be used in a variable declaration.",
-   "Declaring `%s' as parameter %d of `%s' which should be `%s %s'.",
-   "Too many parameters for event `%s'.",
-   "Too few parameters for event `%s'.",
-   "`%s' is not a valid event name.",
-   "`%s' is an event name, and cannot be used as a function name.",
-   "Multiple handlers for event `%s'.",
+   "ERROR",                                                           // 10000
+   "Duplicate declaration of `%s'; previously declared at (%d, %d).", // 10001
+   "Invalid operator: %s %s %s.",                                     // 10002
+   "`%s' is deprecated.",                                             // 10003
+   "`%s' is deprecated, use %s instead.",                             // 10004
+   "Attempting to use `%s' as a %s, but it is a %s.",                 // 10005
+   "`%s' is undeclared.",                                             // 10006
+   "`%s' is undeclared; did you mean %s?",                            // 10007
+   "Invalid member: `%s.%s'.",                                        // 10008
+   "Trying to access `%s.%s', but `%1$s' is a %3$s",                  // 10009
+   "Attempting to access `%s.%s', but `%1$s' is not a vector or rotation.", // 10010
+   "Passing %s as argument %d of `%s' which is declared as `%s %s'.", // 10011
+   "Too many arguments to function `%s'.",                            // 10012
+   "Too few arguments to function `%s'.",                             // 10013
+   "Functions cannot change state.",                                  // 10014
+   "`%s %s' assigned a %s value.",                                    // 10015
+   "%s member assigned %s value (must be float or integer).",         // 10016
+   "Event handlers cannot return a value.",                           // 10017
+   "Returning a %s value from a %s function.",                        // 10018
+   "%s", // Syntax error, bison includes all the info.                // 10019
+   "Global initializer must be constant.",                            // 10020
+   "Expression and constant without operator.",                       // 10021
+   "State must have at least one event handler.",                     // 10022
+   "",                                                                // 10023
+   "`%s' is a constant and cannot be used as an lvalue.",             // 10024
+   "`%s' is a constant and cannot be used in a variable declaration.", // 10025
+   "Not all code paths return a value.",                              // 10026
+   "Declaring `%s' as parameter %d of `%s' which should be `%s %s'.", // 10027
+   "Too many parameters for event `%s'.",                             // 10028
+   "Too few parameters for event `%s'.",                              // 10029
+   "`%s' is not a valid event name.",                                 // 10030
+   "`%s' is an event name, and cannot be used as a function name.",   // 10031
+   "Multiple handlers for event `%s'.",                               // 10032
 
 };
 
 const char *Logger::warning_messages[] = {
-   "WARN",
-   "Declaration of `%s' in this scope shadows previous declaration at (%d, %d)",
-   "Suggest parentheses around assignment used as truth value.",
+   "WARN",                                                            // 20000
+   "Declaration of `%s' in this scope shadows previous declaration at (%d, %d)",  // 20001
+   "Suggest parentheses around assignment used as truth value.",      // 20002
    "Changing state to current state acts the same as return. (SL1.8.3)\n"
-      "If this is what you intended, consider using return instead.",
+      "If this is what you intended, consider using return instead.", // 20003
    "Changing state in a list or string function will corrupt the stack.\n"
       "Using the return value from this function will cause a run-time bounds check error.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack",
+      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack", // 20004
    "Using an if statement to change state in a function is a hack and may have unintended side-effects.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack",
-   "Multiple jumps for label `%s' - only the last will execute.",
-   "Empty if statement.",
+      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack", // 20005
+   "Multiple jumps for label `%s' - only the last will execute.",     // 20006
+   "Empty if statement.",                                             // 20007
    "`%s' treated as %d; this is probably not what you wanted.\n"
       "Make sure you separate opeartors with spaces.\n"
-      "See: http://forums.secondlife.com/showthread.php?t=60257",
-   "%s `%s' declared but never used.",
-   "Unused event parameter `%s'.",
+      "See: http://forums.secondlife.com/showthread.php?t=60257",     // 20008
+   "%s `%s' declared but never used.",                                // 20009
    "Using == on lists only compares lengths.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=annoyances",
-   "Condition is always true.",
-   "Condition is always false.",
+      "See: http://secondlife.com/badgeo/wakka.php?wakka=annoyances", // 20010
+   "Condition is always true.",                                       // 20011
+   "Condition is always false.",                                      // 20012
+   "",                                                                // 20013 (unused)
+   "Unused event parameter `%s'.",                                    // 20014
 };
