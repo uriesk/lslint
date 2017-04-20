@@ -857,17 +857,17 @@ expression
 	}
 	| expression NEQ expression
 	{
-		$$ = new LLScriptExpression( new LLScriptExpression( $1, EQ, $3 ), '!' );
+		$$ = new LLScriptExpression( $1, NEQ, $3 );
 	}
 	| expression LEQ expression
 	{
-		// if ( A <= B ) B > A
-		$$ = new LLScriptExpression( $3, '>', $1 );
+		// (A <= B) is equivalent to !(A > B)
+		$$ = new LLScriptExpression(new LLScriptExpression( $1, '>', $3 ), '!');
 	}
 	| expression GEQ expression
 	{
-		// if ( A >= B ) B < A
-		$$ = new LLScriptExpression( $3, '<', $1 );
+		// (A >= B) is equivalent to !(A < B)
+		$$ = new LLScriptExpression(new LLScriptExpression( $1, '<', $3 ), '!');
 	}
 	| expression '<' expression
 	{

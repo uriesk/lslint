@@ -38,6 +38,7 @@ LLScriptConstant *LLScriptIntegerConstant::operation(int operation, LLScriptCons
                                         case BOOLEAN_AND:   nv = value && ov;   break;
                                         case BOOLEAN_OR:    nv = value || ov;   break;
                                         case EQ:            nv = value == ov;   break;
+                                        case NEQ:           nv = value != ov;   break;
                                         default:            return NULL;
                                      }
                                      return new LLScriptIntegerConstant(nv);
@@ -53,6 +54,7 @@ LLScriptConstant *LLScriptIntegerConstant::operation(int operation, LLScriptCons
                                       case '>':           return new LLScriptIntegerConstant( value > ov );
                                       case '<':           return new LLScriptIntegerConstant( value < ov );
                                       case EQ:            return new LLScriptIntegerConstant( value == ov );
+                                      case NEQ:           return new LLScriptIntegerConstant( !(value == ov) ); // NOTE: Keep it as is: that's subtly different from value != ov
                                       default:            return NULL;
                                    }
                                    return new LLScriptFloatConstant(nv);
@@ -92,6 +94,7 @@ LLScriptConstant *LLScriptFloatConstant::operation(int operation, LLScriptConsta
                                         case BOOLEAN_AND:   return new LLScriptIntegerConstant( value && ov );
                                         case BOOLEAN_OR:    return new LLScriptIntegerConstant( value || ov );
                                         case EQ:            return new LLScriptIntegerConstant( value == ov );
+                                        case NEQ:           return new LLScriptIntegerConstant( !(value == ov) ); // NOTE: Keep it as is: that's subtly different from value != ov
                                         default:            return NULL;
                                      }
                                      return new LLScriptFloatConstant(nv);
@@ -107,6 +110,7 @@ LLScriptConstant *LLScriptFloatConstant::operation(int operation, LLScriptConsta
                                       case '>':           return new LLScriptIntegerConstant( value > ov );
                                       case '<':           return new LLScriptIntegerConstant( value < ov );
                                       case EQ:            return new LLScriptIntegerConstant( value == ov );
+                                      case NEQ:           return new LLScriptIntegerConstant( !(value == ov) ); // NOTE: Keep it as is: that's subtly different from value != ov
                                       default:            return NULL;
                                    }
                                    return new LLScriptFloatConstant(nv);
@@ -138,6 +142,12 @@ LLScriptConstant *LLScriptStringConstant::operation(int operation, LLScriptConst
                                     switch (operation) {
                                        case '+':           return new LLScriptStringConstant( join_string(value, ov) );
                                        case EQ:            return new LLScriptIntegerConstant( !strcmp(value, ov) );
+                                       case NEQ:
+                                          {
+                                             if (mono_mode) return new LLScriptIntegerConstant( !!strcmp(value, ov) );
+                                             int tmp = strcmp(value, ov);
+                                             return new LLScriptIntegerConstant( (tmp > 0) - (tmp < 0) );
+                                          }
                                        default:            return NULL;
                                     }
                                  }
@@ -159,12 +169,17 @@ LLScriptConstant *LLScriptListConstant::operation(int operation, LLScriptConstan
       case NODE_LIST_CONSTANT: {
                                   LLScriptListConstant *other = ((LLScriptListConstant*)other_const);
                                   switch (operation) {
-                                     case EQ:
+                                     case EQ: case NEQ:
                                         // warn on list == list
                                         if ( get_length() != 0 && other->get_length() != 0 ) {
                                            ERROR( lloc, W_LIST_COMPARE );
                                         }
-                                        return new LLScriptIntegerConstant( get_length() == other->get_length() );
+                                        {
+                                           int tmp = get_length() - other->get_length();
+                                           if ( operation == EQ )
+                                              tmp = !tmp;
+                                           return new LLScriptIntegerConstant( tmp );
+                                        }
                                      default:            return NULL;
                                   }
                                }
@@ -226,7 +241,11 @@ LLScriptConstant *LLScriptVectorConstant::operation(int operation, LLScriptConst
                                                            nv[1] = (value->z * ov->x) - (value->x * ov->z);
                                                            nv[2] = (value->x * ov->y) - (value->y * ov->x);
                                                            break;
-                                       case EQ:            return new LLScriptIntegerConstant( (value->x == ov->x) && (value->y == ov->y) && (value->z == ov->z) );
+                                       case EQ: case NEQ:
+                                          {
+                                             int tmp = (value->x == ov->x) && (value->y == ov->y) && (value->z == ov->z);
+                                             return new LLScriptIntegerConstant( tmp ^ (operation == NEQ) );
+                                          }
                                        default:            return NULL;
                                     }
                                     return new LLScriptVectorConstant( nv[0], nv[1], nv[2] );
@@ -256,7 +275,11 @@ LLScriptConstant *LLScriptQuaternionConstant::operation(int operation, LLScriptC
                                         if ( ov == NULL )
                                            return NULL;
                                         switch (operation) {
-                                           case EQ:            return new LLScriptIntegerConstant( (value->x == ov->x) && (value->y == ov->y) && (value->z == ov->z) && (value->s == ov->s) );
+                                           case EQ: case NEQ:
+                                              {
+                                                 int tmp = (value->x == ov->x) && (value->y == ov->y) && (value->z == ov->z) && (value->s == ov->s);
+                                                 return new LLScriptIntegerConstant( tmp ^ (operation == NEQ) );
+                                              }
                                            case '-':           return new LLScriptQuaternionConstant( value->x - ov->x, value->y - ov->y, value->z - ov->z, value->s - ov->s );
                                            default:            return NULL;
                                         }

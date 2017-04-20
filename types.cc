@@ -118,7 +118,18 @@ const static int operator_result_table[][4] = {
    { EQ,         LST_KEY,            LST_KEY,            LST_BOOLEAN         },
    { EQ,         LST_LIST,           LST_LIST,           LST_BOOLEAN         }, // compares list lengths
 
-   // != -- converted to ! EQ by parser
+   // !=
+   { NEQ,         LST_INTEGER,        LST_INTEGER,        LST_BOOLEAN         }, 
+   { NEQ,         LST_INTEGER,        LST_FLOATINGPOINT,  LST_BOOLEAN         },
+   { NEQ,         LST_FLOATINGPOINT,  LST_INTEGER,        LST_BOOLEAN         },
+   { NEQ,         LST_FLOATINGPOINT,  LST_FLOATINGPOINT,  LST_BOOLEAN         },
+   { NEQ,         LST_VECTOR,         LST_VECTOR,         LST_BOOLEAN         },
+   { NEQ,         LST_QUATERNION,     LST_QUATERNION,     LST_BOOLEAN         },
+   { NEQ,         LST_STRING,         LST_STRING,         LST_BOOLEAN         },
+   { NEQ,         LST_STRING,         LST_KEY,            LST_BOOLEAN         }, // strcmp in LSO, != in Mono
+   { NEQ,         LST_KEY,            LST_STRING,         LST_BOOLEAN         },
+   { NEQ,         LST_KEY,            LST_KEY,            LST_BOOLEAN         },
+   { NEQ,         LST_LIST,           LST_LIST,           LST_BOOLEAN         }, // subtracts list lengths
 
    // bitwise operators
    { '&',        LST_INTEGER,        LST_INTEGER,        LST_INTEGER         },
