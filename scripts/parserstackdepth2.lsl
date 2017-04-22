@@ -7,7 +7,7 @@ default {
         1,1,1,1,1,1,1,1,1,1,1,1,
         1,1,1,1,1,1,1,1,1,1,1,1,
         1,1,1,1,1,1,1,1,1,1,1,2,
-        3];         // syntax error at 3 $[E10023]
+        3];         // it produced a syntax error at 3 (E10023), but no more.
     }
 
 }

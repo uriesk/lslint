@@ -1,11 +1,23 @@
 default {
    state_entry() {
-      integer x = PRIM_TEXTURE;
-      integer y = PRIM_GLOW + PRIM_TEXTURE;
-      integer PARCEL_DETAILS_DESC;
-      integer PARCEL_DETAILS_NAME = 5;
+      integer
+             x                     // $[E20009] unused
+               = PRIM_TEXTURE;
+      integer
+              y                    // $[E20009] unused
+                = PRIM_GLOW + PRIM_TEXTURE;
+      integer
+              // FIXME: should not emit E20009
+              PARCEL_DETAILS_DESC  // $[E20009] unused??, $[E10025] invalid
+                                 ;
+      integer
+              // FIXME: should not emit E20009
+              PARCEL_DETAILS_NAME  // $[E20009] unused??, $[E10025] invalid
+                                  = 5;
 
-      PRI_GLOW = 2;
-      PRIM_GLOW = 2;
+      PRI_GLOW                     // $[E10006] undeclared
+               = 2;
+      PRIM_GLOW                    // $[E10024] invalid
+                = 2;
    }
 }

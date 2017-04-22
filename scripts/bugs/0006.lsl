@@ -7,7 +7,7 @@ default {
     state_entry() { }
     state_entry() { } // don't warn about
     state_entry() { } //    these two
-    state_entry() { } // just this one    $[E20013]
+    state_entry() { } // just this one    $[E10032]
 }
 
 

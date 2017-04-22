@@ -2,7 +2,7 @@ integer number = 2+2;               // non constant                             
 integer number = 3;                 // will only pass because above fails       $[E20009]
 integer number = 4;                 // already declared                         $[E10001]
 
-string unused()  {                  // warning: declared but never used         $[E20009]
+string unused()  {                  // unused, not all code paths return values $[E20009] $[E10026]
     state default;                  // error: can't change state in function    $[E10014]
     if (1 == 1) {                   // always true                              $[E20011]
         state default;              // warning: hack that corrupts stack        $[E20004]
@@ -17,11 +17,11 @@ string test(integer a, vector v) {  // param a is never used                    
 
 default {
 
-    state_entry(integer param) {    // state_entry does not take params         $[E10019]
+    state_entry(integer param) {    // state_entry does not take params         $[E10028]
         integer number = "hello";   // type mismatch, warning: shadow decl      $[E10015] $[E20001]
         int q;                      // should point out int->integer typo maybe $[E10019]
-        number = number-2;          // error: parsed as IDENTIFER INTEGER       $[E10021]
-        number = 2-2;               // warning: 2-2 = 2                         $[E20008]
+        number = number-2;          // no longer error (was IDENTIFER INTEGER)  (E10021)
+        number = 2-2;               // no longer warning (was 2-2 = 2)          (E20008)
         [1] == [2];                 // warning: only compares length            $[E20010]
         number = number;            // warning: statement with no effect?
         str = "hi!";                // undeclared                               $[E10006]
@@ -37,10 +37,10 @@ default {
                                     // warning: code is never reached?
     }
 
-    touch_start() {                 // requires parameters                      $[E10019]
+    touch_start() {                 // requires parameters                      $[E10029]
     }
 
-    at_target(integer i, vector v, string s) { // third param should be vector  $[E10019]
+    at_target(integer i, vector v, string s) { // third param should be vector  $[E10027]
     }
 
 }

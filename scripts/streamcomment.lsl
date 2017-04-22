@@ -1,12 +1,15 @@
 /* comment A */
-a() { }
+a // $[E20009] unused
+() { }
 /* comment
    A */
-b() { }
+b // $[E20009] unused
+() { }
 /*
  *  comment B
  **/
-c() { }
+c // $[E20009] unused
+() { }
 default {
    /* comment B */
    state_entry() {

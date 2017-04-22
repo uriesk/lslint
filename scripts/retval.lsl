@@ -16,34 +16,45 @@ quaternion sayto(key id, string s) {
    }
    return ZERO_ROTATION;
 }
-quaternion true_only_no() {
+// FIXME: Location of E10026 (Not all code paths return a value) is misleading
+quaternion
+           true_only_no       // $[E20009] unused, $[E10026] no return
+                        () {
    if (role == 2) {
       return ZERO_ROTATION;
    }
 }
-quaternion both_yes() {
+quaternion
+           both_yes           // $[E20009] unused
+                   () {
    if (role == 2) {
       return ZERO_ROTATION;
+   }
+   else {
+      return ZERO_ROTATION;
+   }
+}
+quaternion
+           both_no1           // $[E20009] unused, $[E10026] no return
+                   () {
+   if (role == 2) {
    }
    else {
       return ZERO_ROTATION;
    }
 }
-quaternion both_no1() {
-   if (role == 2) {
-   }
-   else {
-      return ZERO_ROTATION;
-   }
-}
-quaternion both_no2() {
+quaternion
+           both_no2           // $[E20009] unused, $[E10026] no return
+                   () {
    if (role == 2) {
       return ZERO_ROTATION;
    }
    else {
    }
 }
-quaternion advertise() {
+quaternion
+           advertise          // $[E10026] no return
+                    () {
    string s;
    integer i;
    integer max;
@@ -59,12 +70,18 @@ quaternion advertise() {
       llOwnerSay(llDumpList2String(l, "|"));
    }
 }
-quaternion makewants() {
+quaternion
+           makewants          // $[E10026] no return
+                    () {
    list nameparts;
-   integer ours;
+   integer
+           ours               // $[E20009] unused
+               ;
    integer i;
    integer j;
-   integer k;
+   integer
+           k                  // $[E20009] unused
+            ;
    integer rev;
    integer oldrev;
    integer max;
@@ -100,13 +117,19 @@ quaternion makewants() {
       llOwnerSay("WANT="+llDumpList2String(wants, "|"));
    }
 }
-quaternion consider(key id, string name) {
+quaternion
+           consider           // $[E10026] no return
+                   (key id, string name) {
    list nameparts = llParseString2List(name, ["~"], []);
    integer ours;
    integer theirs;
    integer i;
-   integer max;
-   string s;
+   integer
+           max                // $[E20009] unused
+              ;
+   string
+          s                   // $[E20009] unused
+           ;
    name = llList2String(nameparts, 1);
    theirs = (integer) llList2String(nameparts, 2);
    i = llListFindList(wants, [ name ]);
@@ -134,19 +157,26 @@ integer getrole() {
    llSetText(llGetObjectName(), <1,1,1>, 1);
    return 4;
 }
-quaternion init() {
+quaternion
+           init               // $[E10026] no return
+               () {
    role = getrole();
    generation = llFrand(1.0);
    llSetRemoteScriptAccessPin((((((integer)("0x" + llGetSubString((string)llGetKey(),0,7))) & 0x7FFFFFFF) | 0x40000000) ^ 0x12BABE21));
    single_handle = llListen((((((integer)("0x" + llGetSubString((string)llGetKey(),0,7))) & 0x7FFFFFFF) | 0x40000000) ^ 0x12BABE21), "", NULL_KEY, "");
    makewants();
 }
-quaternion allowdrop() {
+quaternion
+           allowdrop          // $[E10026] no return
+                    () {
    llAllowInventoryDrop(TRUE);
    allow_drop_timer += 60;
 }
 
-unused_test(integer funcparam_unused) {
+unused_test                   // $[E20009] unused
+           (integer
+                    funcparam_unused  // $[E20009] unused
+                                    ) {
 }
 
 default {
