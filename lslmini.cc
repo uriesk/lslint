@@ -66,6 +66,7 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
 int walklevel = 0;
 int mono_mode = 1;
 int skip_preproc = 0;
+int warn_unused_evparam = 0;
 
 void print_walk( char *str ) {
    int i;
@@ -752,6 +753,8 @@ void usage(char *name) {
    printf("\t-A\t\tCheck error assertions (for debugging/testing)\n");
    printf("\t-i\t\tTreat preprocessor directives as comments\n");
    printf("\t-i-\t\tDon't handle preproc. directives specially (default)\n");
+   printf("\t-u\t\tWarn about unused event parameters\n");
+   printf("\t-u-\t\tDon't warn about unused event parameters (default)\n");
 #ifdef COMPILE_ENABLED
    printf("\t-c\t\tCompile.\t\t\t(default)\n");
    printf("\t-C\t\tDon't compile.\n");
@@ -838,6 +841,12 @@ int main(int argc, char **argv) {
                      skip_preproc = 0;
                      j++;
                   } else skip_preproc = 1;
+                  break;
+               case 'u':
+                  if (argv[i][j+1] == '-') {
+                     warn_unused_evparam = 0;
+                     j++;
+                  } else warn_unused_evparam = 1;
                   break;
 #ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;

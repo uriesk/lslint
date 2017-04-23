@@ -925,6 +925,16 @@ expression
 	{
 		$$ = new LLScriptExpression(  $1, SHIFT_RIGHT,  $3  );
 	}
+	| expression INTEGER_CONSTANT
+	{
+		ERROR( &@2, E_NO_OPERATOR );
+		$$ = NULL;
+	}
+	| expression FP_CONSTANT
+	{
+		ERROR( &@2, E_NO_OPERATOR );
+		$$ = NULL;
+	}
 	;
 
 unaryexpression

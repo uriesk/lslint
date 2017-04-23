@@ -82,9 +82,73 @@ void LLScriptScript::define_builtins() {
             return;
          }
 
-         define_symbol( new LLScriptSymbol(
-                  strdup(name), str_to_type(ret_type), SYM_VARIABLE, SYM_BUILTIN
-                  ));
+         LLScriptType *const_type = str_to_type(ret_type);
+         LLScriptSymbol *symbol = new LLScriptSymbol(
+                  strdup(name), const_type, SYM_VARIABLE, SYM_BUILTIN
+                  );
+         // find the start of the next token
+         char *value = name + strlen(name) + 1;
+         LLScriptConstant *constant = NULL;
+         value += strspn(value, "= "); // past the equal sign, skipping spaces
+         switch (const_type->get_itype()) {
+            case LST_INTEGER:
+               {
+                  int num = 0;
+                  if (sscanf(value, "0x%x", &num) == 1
+                      || sscanf(value, "0X%x", &num) == 1
+                      || sscanf(value, "%d", &num) == 1) {
+                     constant = new LLScriptIntegerConstant(num);
+                  }
+               }
+            case LST_FLOATINGPOINT:
+               {
+                  float num = 0.f;
+                  if (sscanf(value, "%g", &num) == 1)
+                     constant = new LLScriptFloatConstant(num);
+               }
+            case LST_VECTOR:
+               {
+                  float x = 0.f, y = x, z = x;
+                  if (sscanf(value, "<%f,%f,%f>", &x, &y, &z) == 3)
+                     constant = new LLScriptVectorConstant(x, y, z);
+               }
+            case LST_QUATERNION:
+               {
+                  float x = 0.f, y = x, z = x, s = 1.f;
+                  if (sscanf(value, "<%f,%f,%f,%f>", &x, &y, &z, &s) == 4)
+                     constant = new LLScriptQuaternionConstant(x, y, z, s);
+               }
+            case LST_STRING:
+               {
+                  char *p = value;
+                  char val[1024];
+                  int i = 0;
+                  if (*p++ != '"') break;
+                  while (*p != '"') {
+                     if (*p == '\\' && *++p == 'n')
+                        val[i++] = '\n';
+                     else
+                        val[i++] = *p;
+
+                     if (*p == '\0')
+                        break;
+                     p++;
+                  }
+                  if (*p == '"') {
+                     val[i] = 0;
+                     p = new char[strlen(val) + 1];
+                     strcpy(p, val);
+                     constant = new LLScriptStringConstant(p);
+                  }
+               }
+
+            //case LST_KEY: case LST_LIST:
+            // just use default
+            default:
+               ;
+         }
+         symbol->set_constant_value(constant);
+         define_symbol(symbol);
       }
       else if (!strcmp(ret_type, "event")) {
          name     = strtok(NULL, " (),");
