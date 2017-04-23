@@ -34,61 +34,73 @@ enum LogLevel {
 };
 
 enum ErrorCode {
+    /***********************************************************************
+     IMPORTANT NOTES:
+       - The order of these errors must match the order of the corresponding
+         messages in logger.cc.
+       - The same applies both to the errors and to the warnings.
+       - The numeric codes are used in the test suite. Don't remove one from
+         the middle: change it to E_removed_NNN or to W_removed_NNN instead,
+         and the corresponding text in logger.cc to "".
+       - Add new codes to the end, right before E_LAST or W_LAST.
+     ***********************************************************************/
+
     // errors
     E_ERROR                 = 10000,
-    E_DUPLICATE_DECLARATION,
-    E_INVALID_OPERATOR,
-    E_DEPRECATED,
-    E_DEPRECATED_WITH_REPLACEMENT,
-    E_WRONG_TYPE,
-    E_UNDECLARED,
-    E_UNDECLARED_WITH_SUGGESTION,
-    E_INVALID_MEMBER,
-    E_MEMBER_NOT_VARIABLE,
-    E_MEMBER_WRONG_TYPE,
-    E_ARGUMENT_WRONG_TYPE,
-    E_TOO_MANY_ARGUMENTS,
-    E_TOO_FEW_ARGUMENTS,
-    E_CHANGE_STATE_IN_FUNCTION,
-    E_WRONG_TYPE_IN_ASSIGNMENT,
-    E_WRONG_TYPE_IN_MEMBER_ASSIGNMENT,
-    E_RETURN_VALUE_IN_EVENT_HANDLER,
-    E_BAD_RETURN_TYPE,
-    E_NOT_ALL_PATHS_RETURN,
-    E_SYNTAX_ERROR,
-    E_GLOBAL_INITIALIZER_NOT_CONSTANT,
-    E_NO_EVENT_HANDLERS,
-    E_BUILTIN_LVALUE,
-    E_SHADOW_CONSTANT,
-    E_ARGUMENT_WRONG_TYPE_EVENT,
-    E_TOO_MANY_ARGUMENTS_EVENT,
-    E_TOO_FEW_ARGUMENTS_EVENT,
-    E_INVALID_EVENT,
-    E_DUPLICATE_DECLARATION_EVENT,
-    E_MULTIPLE_EVENT_HANDLERS,
+    E_DUPLICATE_DECLARATION,           // 10001
+    E_INVALID_OPERATOR,                // 10002
+    E_DEPRECATED,                      // 10003
+    E_DEPRECATED_WITH_REPLACEMENT,     // 10004
+    E_WRONG_TYPE,                      // 10005
+    E_UNDECLARED,                      // 10006
+    E_UNDECLARED_WITH_SUGGESTION,      // 10007
+    E_INVALID_MEMBER,                  // 10008
+    E_MEMBER_NOT_VARIABLE,             // 10009
+    E_MEMBER_WRONG_TYPE,               // 10010
+    E_ARGUMENT_WRONG_TYPE,             // 10011
+    E_TOO_MANY_ARGUMENTS,              // 10012
+    E_TOO_FEW_ARGUMENTS,               // 10013
+    E_CHANGE_STATE_IN_FUNCTION,        // 10014
+    E_WRONG_TYPE_IN_ASSIGNMENT,        // 10015
+    E_WRONG_TYPE_IN_MEMBER_ASSIGNMENT, // 10016
+    E_RETURN_VALUE_IN_EVENT_HANDLER,   // 10017
+    E_BAD_RETURN_TYPE,                 // 10018
+    E_SYNTAX_ERROR,                    // 10019
+    E_GLOBAL_INITIALIZER_NOT_CONSTANT, // 10020
+    E_NO_OPERATOR,                     // 10021
+    E_NO_EVENT_HANDLERS,               // 10022
+    E_removed_1,                       // 10023
+    E_BUILTIN_LVALUE,                  // 10024
+    E_SHADOW_CONSTANT,                 // 10025
+    E_NOT_ALL_PATHS_RETURN,            // 10026
+    E_ARGUMENT_WRONG_TYPE_EVENT,       // 10027
+    E_TOO_MANY_ARGUMENTS_EVENT,        // 10028
+    E_TOO_FEW_ARGUMENTS_EVENT,         // 10029
+    E_INVALID_EVENT,                   // 10030
+    E_DUPLICATE_DECLARATION_EVENT,     // 10031
+    E_MULTIPLE_EVENT_HANDLERS,         // 10032
     E_LAST,
-    
-    
+
 
 
     // warnings
     W_WARNING               = 20000,
-    W_SHADOW_DECLARATION,
-    W_ASSIGNMENT_IN_COMPARISON,
-    W_CHANGE_TO_CURRENT_STATE,
-    W_CHANGE_STATE_HACK_CORRUPT,
-    W_CHANGE_STATE_HACK,
-    W_MULTIPLE_JUMPS_FOR_LABEL,
-    W_EMPTY_IF,
-    W_BAD_DECIMAL_LEX,
-    W_DECLARED_BUT_NOT_USED,
-    W_UNUSED_EVENT_PARAMETER,
-    W_LIST_COMPARE,
-    W_CONDITION_ALWAYS_TRUE,
-    W_CONDITION_ALWAYS_FALSE,
+    W_SHADOW_DECLARATION,              // 20001
+    W_ASSIGNMENT_IN_COMPARISON,        // 20002
+    W_CHANGE_TO_CURRENT_STATE,         // 20003
+    W_CHANGE_STATE_HACK_CORRUPT,       // 20004
+    W_CHANGE_STATE_HACK,               // 20005
+    W_MULTIPLE_JUMPS_FOR_LABEL,        // 20006
+    W_EMPTY_IF,                        // 20007
+    W_BAD_DECIMAL_LEX,                 // 20008
+    W_DECLARED_BUT_NOT_USED,           // 20009
+    W_LIST_COMPARE,                    // 20010
+    W_CONDITION_ALWAYS_TRUE,           // 20011
+    W_CONDITION_ALWAYS_FALSE,          // 20012
+    W_removed_1,                       // 20013
+    W_UNUSED_EVENT_PARAMETER,          // 20014
     W_LAST,
-    
-    
+
 };
 
 #define LOG         Logger::get()->log
