@@ -267,6 +267,7 @@ const char *Logger::error_messages[] = {
    "Too few parameters for event `%s'.",
    "`%s' is not a valid event name.",
    "`%s' is an event name, and cannot be used as a function name.",
+   "Multiple handlers for event `%s'.",
 
 };
 
@@ -292,5 +293,4 @@ const char *Logger::warning_messages[] = {
       "See: http://secondlife.com/badgeo/wakka.php?wakka=annoyances",
    "Condition is always true.",
    "Condition is always false.",
-   "Multiple handlers for event `%s' - only the last will execute.",
 };
