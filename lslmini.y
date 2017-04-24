@@ -28,6 +28,9 @@
 		 (Current).last_column  = (Rhs)[N].last_column,		\
 		 LLASTNode::set_glloc(&(Current)))
 
+	enum simple_recurse_mode { SIMPLE_ANY, SIMPLE_LIST, SIMPLE_VEC_ROT };
+	static LLScriptSimpleAssignable *getSimpleAssignable(LLScriptExpression *expression, simple_recurse_mode mode = SIMPLE_ANY);
+
 %}
 
 %error-verbose
@@ -56,6 +59,12 @@
 	class LLScriptState				*state;
 	class LLScriptGlobalStorage		*global_store;
 	class LLScriptScript			*script;
+};
+
+%initial-action
+{
+	script = new LLScriptScript();
+	script->define_builtins();
 };
 
 
@@ -157,15 +166,7 @@
 %type <global_store>	globals
 %type <global_store>	global
 %type <global>			global_variable
-%type <assignable>		simple_assignable
-%type <assignable>		simple_assignable_no_list
 %type <constant>		constant
-%type <assignable>		special_constant
-%type <assignable>		vector_constant
-%type <assignable>		quaternion_constant
-%type <assignable>		list_constant
-%type <assignable>		list_entries
-%type <assignable>		list_entry
 %type <type>			typename
 %type <global_funcs>	global_function
 %type <global_decl>		function_parameters
@@ -249,11 +250,13 @@
 lscript_program
 	: globals states
 	{
-		script = new LLScriptScript($1, $2);
+		script->push_child($1);
+		script->push_child($2);
 	}
 	| states
 	{
-		script = new LLScriptScript(NULL, $1);
+		script->push_child(new LLASTNullNode());
+		script->push_child($1);
 	}
 	;
 
@@ -298,52 +301,19 @@ global_variable
 	{
 		$$ = new LLScriptGlobalVariable($1, NULL);
 	}
-	| name_type '=' '-' INTEGER_CONSTANT ';'
-	{
-		$$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptIntegerConstant(-$4)));
-	}
-	| name_type '=' '-' FP_CONSTANT ';'
-	{
-		$$ = new LLScriptGlobalVariable($1, new LLScriptSimpleAssignable(new LLScriptFloatConstant(-$4)));
-	}
-	| name_type '=' simple_assignable ';'
-	{
-		$$ = new LLScriptGlobalVariable($1, $3);
-	}
 	| name_type '=' expression ';'
 	{
-		ERROR(&@3, E_GLOBAL_INITIALIZER_NOT_CONSTANT);
-		$$ = NULL;
+		LLScriptSimpleAssignable *sa = getSimpleAssignable($3);
+		if (sa) {
+			$$ = new LLScriptGlobalVariable($1, sa);
+		} else {
+			ERROR(&@3, E_GLOBAL_INITIALIZER_NOT_CONSTANT);
+			$$ = NULL;
+		}
 	}
 	| name_type '=' error ';'
 	{
 		$$ = NULL;
-	}
-	;
-
-simple_assignable
-	: simple_assignable_no_list
-	{
-		$$ = $1;
-	}
-	| list_constant
-	{
-		$$ = $1;
-	}
-	;
-
-simple_assignable_no_list
-	: IDENTIFIER
-	{
-		$$ = new LLScriptSimpleAssignable(new LLScriptIdentifier($1));
-	}
-	| constant
-	{
-		$$ = new LLScriptSimpleAssignable($1);
-	}
-	| special_constant
-	{
-		$$ = $1; //new LLScriptSimpleAssignable($1);
 	}
 	;
 
@@ -352,96 +322,21 @@ constant
 	{
 		$$ = new LLScriptIntegerConstant($1);
 	}
-	| '-' INTEGER_CONSTANT
-	{
-		$$ = new LLScriptIntegerConstant(-$2);
-	}
 	| INTEGER_TRUE
 	{
-		$$ = new LLScriptIntegerConstant($1);
+		$$ = new LLScriptIntegerConstant($1, true);
 	}
 	| INTEGER_FALSE
 	{
-		$$ = new LLScriptIntegerConstant($1);
+		$$ = new LLScriptIntegerConstant($1, true);
 	}
 	| FP_CONSTANT
 	{
 		$$ = new LLScriptFloatConstant($1);
 	}
-	| '-' FP_CONSTANT
-	{
-		$$ = new LLScriptFloatConstant(-$2);
-	}
 	| STRING_CONSTANT
 	{
 		$$ = new LLScriptStringConstant($1);
-	}
-	;
-
-special_constant
-	: vector_constant
-	{
-		$$ = $1;
-	}
-	| quaternion_constant
-	{
-		$$ = $1;
-	}
-	;
-
-vector_constant
-	: '<' simple_assignable ',' simple_assignable ',' simple_assignable '>'
-	{
-		$$ = new LLScriptSimpleAssignable(new LLScriptVectorConstant($2, $4, $6));
-	}
-	| ZERO_VECTOR
-	{
-		$$ = new LLScriptSimpleAssignable(new LLScriptVectorConstant(0.0, 0.0, 0.0));
-	}
-	;
-
-quaternion_constant
-	: '<' simple_assignable ',' simple_assignable ',' simple_assignable ',' simple_assignable '>'
-	{
-		$$ = new LLScriptSimpleAssignable(new LLScriptQuaternionConstant($2, $4, $6, $8));
-	}
-	| ZERO_ROTATION
-	{
-		$$ = new LLScriptSimpleAssignable(new LLScriptQuaternionConstant(0.0, 0.0, 0.0, 0.0));
-	}
-	;
-
-list_constant
-	: '[' list_entries ']'
-	{
-		$$ = new LLScriptSimpleAssignable(new LLScriptListConstant($2));
-	}
-	| '[' ']'
-	{
-		$$ = new LLScriptSimpleAssignable(new LLScriptListConstant((LLScriptSimpleAssignable*)NULL));
-	}
-	;
-
-list_entries
-	: list_entry
-	{
-		$$ = $1;
-	}
-	| list_entry ',' list_entries
-	{
-		if ( $1 ) {
-			$1->add_next_sibling($3);
-			$$ = $1;
-		} else {
-			$$ = $3;
-		}
-	}
-	;
-
-list_entry
-	: simple_assignable_no_list
-	{
-		$$ = $1;
 	}
 	;
 
@@ -504,7 +399,7 @@ function_parameters
 	{
 		if ( $1 ) {
 			$1->push_child($3->get_children());
-			//delete $3;
+			delete $3;
 			$$ = $1;
 		} else {
 			$$ = $3;
@@ -528,7 +423,7 @@ event_parameters
 	{
 		if ( $1 ) {
 			$1->push_child($3->get_children());
-			//delete $3;
+			delete $3;
 			$$ = $1;
 		} else {
 			$$ = $3;
@@ -973,13 +868,20 @@ unaryexpression
 	;
 
 typecast
-	: '(' typename ')' lvalue
+	: '(' typename ')' '-' INTEGER_CONSTANT
 	{
-		$$ = new LLScriptTypecastExpression($2, $4);
+		$$ = new LLScriptTypecastExpression($2, new LLScriptIntegerConstant(-$5));
 	}
-	| '(' typename ')' constant
+	| '(' typename ')' '-' FP_CONSTANT
 	{
-		$$ = new LLScriptTypecastExpression($2, $4);
+		$$ = new LLScriptTypecastExpression($2, new LLScriptFloatConstant(-$5));
+	}
+	| '(' typename ')' '-' IDENTIFIER
+	{
+		LLScriptSymbol *symbol = script->get_symbol_table()->lookup($5);
+		if (!symbol || symbol->get_symbol_type() != SYM_VARIABLE || symbol->get_sub_type() != SYM_BUILTIN)
+			ERROR(&@4, E_SYNTAX_ERROR, "Need parentheses around expression.");
+		$$ = new LLScriptTypecastExpression($2, new LLScriptExpression( new LLScriptLValueExpression( new LLScriptIdentifier($5) ), '-') );
 	}
 	| '(' typename ')' unarypostfixexpression
 	{
@@ -1082,3 +984,102 @@ int yyerror( YYLTYPE *lloc, void *scanner, const char *message ) {
 	return 0;
 }
 
+static LLScriptSimpleAssignable *getSimpleAssignable(LLScriptExpression *expression, simple_recurse_mode mode)
+{
+  // Check if the expression is simple and construct a LLSimpleAssignable node
+  // from it if so. Recurse to handle list and vector elements; the mode
+  // parameter tells us what to accept.
+
+  LLScriptConstant *constant = NULL;
+  LLScriptIdentifier *identifier = NULL;
+
+  LLASTNode *node = expression;
+
+  int sign = 1;
+  if (expression->get_operation() == '-' && node->get_child(1) == NULL) {
+    // Enter the expression after the sign
+    sign = -1;
+    node = node->get_child(0);
+  }
+
+  if (node->get_node_type() == NODE_EXPRESSION) { // this should always be true
+
+    LLNodeSubType subtype = node->get_node_sub_type();
+    if ((subtype == NODE_NO_SUB_TYPE || subtype == NODE_LVALUE_EXPRESSION)
+        && !((LLScriptExpression *)node)->get_operation()
+        && node->get_child(1) == NULL) {
+
+      // Handle integer, float, string, variable, constant
+
+      node = node->get_child(0);
+
+      if (node->get_node_type() == NODE_IDENTIFIER) {
+
+        // Accept negative only if it's a builtins.txt integer or float constant
+        LLScriptSymbol *symbol;
+        if (sign != -1 || ((symbol = script->get_symbol_table()->lookup(((LLScriptIdentifier *)node)->get_name()))
+            && symbol->get_symbol_type() == SYM_VARIABLE
+            && symbol->get_sub_type() == SYM_BUILTIN
+            && (symbol->get_type()->get_itype() == LST_INTEGER
+                || symbol->get_type()->get_itype() == LST_FLOATINGPOINT)))
+          identifier = (LLScriptIdentifier *)node;
+
+      } else if (node->get_node_type() == NODE_CONSTANT) {
+        subtype = node->get_node_sub_type();
+
+        // Integer, float, string, but not -TRUE/-FALSE
+        if ((subtype == NODE_INTEGER_CONSTANT && (sign != -1 || !((LLScriptIntegerConstant *)node)->get_is_bool()))
+            || subtype == NODE_FLOAT_CONSTANT
+            || (subtype == NODE_STRING_CONSTANT && sign != -1)) {
+          constant = (LLScriptConstant *)node;
+        }
+      }
+    } else if (sign != -1 && (mode == SIMPLE_ANY || mode == SIMPLE_LIST)
+               && (subtype == NODE_VECTOR_EXPRESSION
+                   || subtype == NODE_QUATERNION_EXPRESSION)) {
+
+      // Handle vector/quaternion
+
+      LLScriptSimpleAssignable *x = getSimpleAssignable((LLScriptExpression *)node->get_child(0), SIMPLE_VEC_ROT);
+      LLScriptSimpleAssignable *y = getSimpleAssignable((LLScriptExpression *)node->get_child(1), SIMPLE_VEC_ROT);
+      LLScriptSimpleAssignable *z = getSimpleAssignable((LLScriptExpression *)node->get_child(2), SIMPLE_VEC_ROT);
+      if (subtype == NODE_QUATERNION_EXPRESSION) {
+         LLScriptSimpleAssignable *s = getSimpleAssignable((LLScriptExpression *)node->get_child(3), SIMPLE_VEC_ROT);
+         if (x && y && z && s)
+           constant = new LLScriptQuaternionConstant(x, y, z, s);
+      } else {
+         if (x && y && z)
+           constant = new LLScriptVectorConstant(x, y, z);
+      }
+    } else if (sign != -1 && subtype == NODE_LIST_EXPRESSION && mode == SIMPLE_ANY) {
+
+      // Handle list
+
+      int i = 0;
+      LLScriptExpression *list_entry;
+      LLScriptSimpleAssignable *converted;
+      LLScriptSimpleAssignable *new_list = NULL;
+      do {
+        list_entry = (LLScriptExpression *)node->get_child(i++);
+        if (!list_entry || list_entry->get_node_type() != NODE_EXPRESSION) {
+          constant = new LLScriptListConstant(new_list);
+          break;
+        }
+        converted = getSimpleAssignable(list_entry, SIMPLE_LIST);
+        if (!converted)
+          break;
+        if (new_list)
+          new_list->add_next_sibling(converted);
+        else
+          new_list = converted;
+      } while (true);
+    }
+  }
+
+  if (constant)
+    return new LLScriptSimpleAssignable(constant);
+  else if (identifier)
+    return new LLScriptSimpleAssignable(identifier);
+  else
+    return NULL;
+}
