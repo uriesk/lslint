@@ -108,6 +108,7 @@ class LLScriptGlobalVariable : public LLASTNode {
     virtual char *get_node_name() { return "global var"; }
     virtual LLNodeType get_node_type() { return NODE_GLOBAL_VARIABLE; };
     virtual void determine_type();
+    virtual void determine_value();
 
     void cil_declare();
 };

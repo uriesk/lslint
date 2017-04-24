@@ -10,6 +10,8 @@ integer good_i06 = ALL_SIDES;
 integer good_i07 = -ALL_SIDES;
 integer good_i08 = - ALL_SIDES;
 integer good_i09 = good_i01;
+integer good_i10 = good_i09;
+integer good_i11 = good_i00;
 
 float good_f00;
 float good_f01 = 1;
@@ -48,13 +50,15 @@ vector good_v01 = <0, 0, 0>;
 vector good_v02 = <-0.0, 0.0, 0.0>;
 vector good_v03 = <- 0.0, 1, -2>;
 
+rotation good_r00;
+
 list good_l00;
 list good_l01 = [];
-list good_l02 = [<1,2,3>,<-1,2,3>, -1, TRUE, -ALL_SIDES, PI, - PI];
+list good_l02 = [<1,2,3>, <-1,2,3>, -1, TRUE, -ALL_SIDES, PI, - PI];
 
 // Bad:
 
-integer bad_i01 = -TRUE;     // $[E10020]
+integer bad_i01 = -TRUE;     // $[E10020] global initializer must be constant
 integer bad_i02 = -FALSE;    // $[E10020]
 integer bad_i03 = -ZERO_VECTOR;    // $[E10020]
 integer bad_i04 = -ZERO_ROTATION;  // $[E10020]
@@ -97,12 +101,30 @@ default{timer(){
 (string)[-TRUE, -<0,0,0>, ~1];
 
 // Bad
-(string)-TRUE;     // $[E10019]
+(string)-TRUE;     // $[E10019] syntax error
 (string) - FALSE;  // $[E10019]
 (string)~1;        // $[E10019]
 (string)-<0,0,0>;  // $[E10019]
 (string)-good_i01; // $[E10019]
-(string)[-"nope"]; // $[E10002]
+(string)[-"nope"]; // $[E10002] invalid operator
+
+if (good_i00 == 0)               0; // $[E20011] always true
+if (good_i00 == good_i00)        0; // $[E20011]
+if (good_i01 == 1)               0; // $[E20011]
+if (good_i09 == 1)               0; // $[E20011]
+if (good_i10 == 1)               0; // $[E20011]
+if (good_i11 == 0)               0; // $[E20011]
+if (good_f00 == 0.)              0; // $[E20011]
+if (good_s00 == "")              0; // $[E20011]
+if (good_k00 == "")              0; // $[E20011]
+if (good_k00 == good_k00)        0; // $[E20011]
+if (good_v00 == ZERO_VECTOR)     0; // $[E20011]
+if (good_v00 == good_v01)        0; // $[E20011]
+if (good_r00 == ZERO_ROTATION)   0; // $[E20011]
+if (good_l00 == [])              0; // $[E20011]
+if (good_l01 == [])              0; // $[E20011]
+if (good_l00 == good_l01)        0; // $[E20011]
+if (good_l02 == [0,0,0,0,0,0,0]) 0; // $[E20011] $[E20010] compares lengths
 
 // Use variables to avoid extra warnings
 good_i00; good_i01; good_i02; good_i03; good_i04;

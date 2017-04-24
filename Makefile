@@ -77,12 +77,21 @@ endif
 
 OBJS = lslmini.tab.o lex.yy.o lslmini.o symtab.o builtins.o builtins_txt.o types.o values.o final_walk.o operators.o logger.o
 
+all: $(PROGRAM)
+
 $(PROGRAM): $(OBJS)
 	$(LD) $(LDOUTPUT)"$@" $^
 	$(UPX) "$@"
 
 clean:
 	rm -f $(OBJS) lex.yy.c lslint lslmini.tab.c lslmini.tab.h
+
+ifndef WINDOWS
+
+check: all
+	sh test.sh
+
+endif
 
 $(OBJS): lslmini.hh
 
@@ -116,3 +125,5 @@ lex.yy.c: lslmini.l
 
 .c.o .cc.o:
 	$(CXX) $(CXXOUTPUT)"$@" -c $<
+
+.PHONY: all clean check
