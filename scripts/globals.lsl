@@ -51,6 +51,8 @@ vector good_v02 = <-0.0, 0.0, 0.0>;
 vector good_v03 = <- 0.0, 1, -2>;
 
 rotation good_r00;
+rotation good_r01 = <1,2,3,4>;
+rotation good_r02 = good_r01;
 
 list good_l00;
 list good_l01 = [];
@@ -74,6 +76,8 @@ float bad_f03 = -TRUE;       // $[E10020]
 float bad_f04 = -good_f01;   // $[E10020]
 string bad_s01 = - "what?";  // $[E10020]
 vector bad_v01 = -<1,2,3>;   // $[E10020]
+vector bad_v02 = <1,2,[]>;   // $[E10020]
+vector bad_r01 = -r00;       // $[E10020]
 list bad_l01 = [-TRUE];      // $[E10020]
 list bad_l02 = [-<1,1,1>];   // $[E10020]
 list bad_l03 = [1,[2,3],4];  // $[E10020] TODO: add "Lists can't contain lists"
@@ -121,6 +125,7 @@ if (good_k00 == good_k00)        0; // $[E20011]
 if (good_v00 == ZERO_VECTOR)     0; // $[E20011]
 if (good_v00 == good_v01)        0; // $[E20011]
 if (good_r00 == ZERO_ROTATION)   0; // $[E20011]
+if (good_r02 == <1,2,3,4>)       0; // $[E20011]
 if (good_l00 == [])              0; // $[E20011]
 if (good_l01 == [])              0; // $[E20011]
 if (good_l00 == good_l01)        0; // $[E20011]
