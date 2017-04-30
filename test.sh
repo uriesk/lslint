@@ -33,4 +33,5 @@ rm -f ./test.run.txt
 if [ $failed != . ] ; then
   cat ./test.total.txt
   rm -f ./test.total.txt
+  exit 1
 fi

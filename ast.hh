@@ -78,6 +78,8 @@ class LLASTNode {
       va_end(ap);
     }
 
+    virtual ~LLASTNode() { }
+
     void add_children( int num, va_list vp );
 
     LLASTNode *get_next() { return next; }

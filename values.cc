@@ -59,9 +59,31 @@ void LLScriptExpression::determine_value() {
    }
 }
 
+void LLScriptGlobalVariable::determine_value() {
+   // ensure the symbol receives the constant value
+   if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE )
+      ((LLScriptIdentifier *)get_child(0))->get_symbol()->set_constant_value(get_child(1)->get_constant_value());
+   else {
+      // assign a default value to the symbol
+      LLScriptConstant *value;
+      switch(get_child(0)->get_type()->get_itype()) {
+         case LST_INTEGER:       value = new LLScriptIntegerConstant(0); break;
+         case LST_FLOATINGPOINT: value = new LLScriptFloatConstant(0.0f); break;
+         case LST_KEY:           // fall through
+         case LST_STRING:        value = new LLScriptStringConstant(""); break;
+         case LST_VECTOR:        value = new LLScriptVectorConstant(0.f, 0.f, 0.f); break;
+         case LST_QUATERNION:    value = new LLScriptQuaternionConstant(0.f, 0.f, 0.f, 1.f); break;
+         case LST_LIST:          value = new LLScriptListConstant((LLScriptSimpleAssignable *)NULL); break;
+         default:                fprintf(stderr, "Impossible"); exit(EXIT_FAILURE);
+      }
+      ((LLScriptIdentifier *)get_child(0))->get_symbol()->set_constant_value(value);
+   }
+}
+
 void LLScriptSimpleAssignable::determine_value() {
-   if ( get_child(0) )
+   if ( get_child(0) ) {
       constant_value = get_child(0)->get_constant_value();
+   }
 }
 
 void LLScriptVectorConstant::determine_value() {
@@ -134,7 +156,7 @@ void LLScriptQuaternionConstant::determine_value() {
    }
 
    if ( cv < 4 ) // not enough children;
-   return;
+      return;
 
    value = new LLQuaternion( v[0], v[1], v[2], v[3] );
 

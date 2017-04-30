@@ -203,10 +203,6 @@ void LLScriptGlobalVariable::define_symbols() {
       identifier->get_symbol()->set_constant_value( get_child(1)->get_child(0)->get_constant_value() );
 }
 
-void LLScriptScript::define_symbols() {
-   define_builtins();
-}
-
 void LLScriptState::define_symbols() {
    LLASTNode             *node = get_children();
    LLScriptIdentifier    *identifier;

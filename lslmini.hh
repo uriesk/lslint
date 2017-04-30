@@ -52,7 +52,9 @@ class LLScriptScript : public LLASTNode {
       : LLASTNode( 2, globals, states ) {
         symbol_table = new LLScriptSymbolTable();
     };
-    virtual void define_symbols();
+    LLScriptScript() : LLASTNode( 0 ) {
+        symbol_table = new LLScriptSymbolTable();
+    };
 #ifdef COMPILE_ENABLED
     virtual void generate_cil();
 #endif /* COMPILE_ENABLED */
@@ -106,6 +108,7 @@ class LLScriptGlobalVariable : public LLASTNode {
     virtual char *get_node_name() { return "global var"; }
     virtual LLNodeType get_node_type() { return NODE_GLOBAL_VARIABLE; };
     virtual void determine_type();
+    virtual void determine_value();
 
     void cil_declare();
 };
@@ -134,7 +137,7 @@ class LLScriptConstant : public LLASTNode {
 
 class LLScriptIntegerConstant : public LLScriptConstant {
   public:
-    LLScriptIntegerConstant( int v ) : LLScriptConstant(), value(v) { type = TYPE(LST_INTEGER); }
+    LLScriptIntegerConstant( int v, int isbool = 0 ) : LLScriptConstant(), value(v), is_bool(isbool) { type = TYPE(LST_INTEGER); }
 
     virtual char *get_node_name() {
       static char buf[256];
@@ -145,10 +148,12 @@ class LLScriptIntegerConstant : public LLScriptConstant {
     virtual LLNodeSubType get_node_sub_type() { return NODE_INTEGER_CONSTANT; }
 
     int get_value() { return value; }
+    int get_is_bool() { return is_bool; }
     virtual LLScriptConstant *operation(int op, LLScriptConstant *other_const, YYLTYPE *lloc);
 
   private:
     int value;
+    int is_bool;
 };
 
 
