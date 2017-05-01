@@ -79,6 +79,9 @@ enum ErrorCode {
     E_INVALID_EVENT,                   // 10030
     E_DUPLICATE_DECLARATION_EVENT,     // 10031
     E_MULTIPLE_EVENT_HANDLERS,         // 10032
+    E_BREAK_WITHOUT_SWITCH,            // 10033
+    E_SWITCH_MULTIPLE_DEFAULTS,        // 10034
+    E_INCOMPATIBLE_CASE_TYPE,          // 10035
     E_LAST
 
 
@@ -100,6 +103,9 @@ enum ErrorCode {
     W_removed_2,                       // 20013
     W_UNUSED_EVENT_PARAMETER,          // 20014
     W_STATEMENTS_BEFORE_CASE,          // 20015
+    W_CONSTANT_SWITCH,                 // 20016
+    W_SWITCH_NO_DEFAULT,               // 20017
+    W_DUPLICATE_CASE,                  // 20018
     W_LAST
 
 };

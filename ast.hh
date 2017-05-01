@@ -99,7 +99,7 @@ class LLASTNode {
     void                set_type(LLScriptType *_type) { type = _type;   }
     class LLScriptType *get_type()                    { return type;    }
 
-    
+
     // Add a child to beginning of list. Not sure if this will be used yet.
     void    add_child( LLASTNode *child ) {
       if ( child == NULL ) return;
@@ -107,7 +107,7 @@ class LLASTNode {
       child->set_parent(this);
       children  = child;
     }
-   
+
 
     // Add child to end of list.
     void    push_child( LLASTNode *child ) {
@@ -160,7 +160,7 @@ class LLASTNode {
     }
 
     /// passes                  ///
-    
+
     // walk through tree, printing out names
     void walk();
 
@@ -179,7 +179,8 @@ class LLASTNode {
 
     // final pre walk checks    TODO: come up with a better name?
     void final_pre_walk();
-    virtual void final_pre_checks();
+    virtual void final_pre_checks() {};
+    virtual void final_post_checks() {};
 
     // compile
     virtual void generate_cil() {};
@@ -198,7 +199,7 @@ class LLASTNode {
     virtual char       *get_node_name() { return "node";    };
     virtual LLNodeType  get_node_type() { return NODE_NODE; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_NO_SUB_TYPE; }
-    
+
     /// constants ///
     bool            is_constant()           { return constant_value != NULL; };
     class LLScriptConstant  *get_constant_value()    { return constant_value; };
@@ -215,7 +216,7 @@ class LLASTNode {
     LLASTNode                   *prev;
     YYLTYPE                      lloc;
     static YYLTYPE               glloc;
-};   
+};
 
 class LLASTNullNode : public LLASTNode {
   virtual LLNodeType get_node_type() { return NODE_NULL; };

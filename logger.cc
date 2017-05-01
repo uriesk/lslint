@@ -275,6 +275,9 @@ const char *Logger::error_messages[] = {
    "`%s' is not a valid event name.",                                 // 10030
    "`%s' is an event name, and cannot be used as a function name.",   // 10031
    "Multiple handlers for event `%s'.",                               // 10032
+   "break statement must be inside a switch statement.",              // 10033
+   "Multiple default labels for switch statement.",                   // 10034
+   "Case type incompatible with switch type.",                        // 10035
 
 };
 
@@ -300,4 +303,8 @@ const char *Logger::warning_messages[] = {
    "",                                                                // 20013 (unused)
    "Unused event parameter `%s'.",                                    // 20014
    "Statements before the first case label won't be executed.",       // 20015
+   "Switch statement expression is constant.",                        // 20016
+   "No default label in switch; that may cause the statement to misbehave.\n"
+      "See: https://jira.phoenixviewer.com/browse/FIRE-17710",        // 20017
+   "Duplicate case label.",                                           // 20018
 };
