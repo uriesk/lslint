@@ -232,6 +232,7 @@
 %type <expression>		unaryexpression
 %type <expression>		typecast
 
+%nonassoc INTEGER_CONSTANT FP_CONSTANT // solves 'expression FP_CONSTANT' conflicts
 %right '=' MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN
 %left 	BOOLEAN_AND BOOLEAN_OR
 %left	'|'
