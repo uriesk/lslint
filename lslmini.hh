@@ -15,10 +15,9 @@ typedef float F32;
 #define MAX_NODES       3
 
 extern class LLScriptScript *script;
-extern int walklevel;
-extern int mono_mode;
-extern int skip_preproc;
-extern int warn_unused_evparam;
+extern bool mono_mode;
+extern bool skip_preproc;
+extern bool warn_unused_evparam;
 void print_walk(char *str);
 void do_walk(class LLASTNode *node);
 

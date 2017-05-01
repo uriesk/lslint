@@ -63,10 +63,10 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
    {NULL,                NULL},
 };
 
-int walklevel = 0;
-int mono_mode = 1;
-int skip_preproc = 0;
-int warn_unused_evparam = 0;
+static int walklevel = 0;
+bool mono_mode = true;
+bool skip_preproc = false;
+bool warn_unused_evparam = false;
 
 void print_walk( char *str ) {
    int i;
@@ -110,7 +110,7 @@ void LLASTNode::walk() {
    }
 }
 
-// Lookup a symbol, propogating up the tree until it is found.
+// Lookup a symbol, propagating up the tree until it is found.
 LLScriptSymbol *LLASTNode::lookup_symbol(char *name, LLSymbolType type, bool is_case_sensitive) {
    LLScriptSymbol *sym = NULL;
 
@@ -125,7 +125,7 @@ LLScriptSymbol *LLASTNode::lookup_symbol(char *name, LLSymbolType type, bool is_
    return sym;
 }
 
-// Define a symbol, propogating up the tree to the nearest scope level.
+// Define a symbol, propagating up the tree to the nearest scope level.
 void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
 
    // If we have a symbol table, define it there
@@ -264,11 +264,11 @@ void LLScriptLabel::define_symbols() {
    define_symbol( identifier->get_symbol() );
 }
 
-// walk tree post-order and propogate types
-void LLASTNode::propogate_types() {
+// walk tree post-order and propagate types
+void LLASTNode::propagate_types() {
    LLASTNode             *node = get_children();
    while ( node ) {
-      node->propogate_types();
+      node->propagate_types();
       node = node->get_next();
    }
 
@@ -819,9 +819,9 @@ int main(int argc, char **argv) {
             switch( argv[i][j] ) {
                case 'm':
                   if (argv[i][j+1] == '-') {
-                     mono_mode = 0;
+                     mono_mode = false;
                      j++;
-                  } else mono_mode = 1;
+                  } else mono_mode = true;
                   break;
                case 'b': builtins_file = argv[++i]; goto nextarg;
                case 't': show_tree = true; break;
@@ -834,15 +834,15 @@ int main(int argc, char **argv) {
                case 'V': version(); return 0;
                case 'i':
                   if (argv[i][j+1] == '-') {
-                     skip_preproc = 0;
+                     skip_preproc = false;
                      j++;
-                  } else skip_preproc = 1;
+                  } else skip_preproc = true;
                   break;
                case 'u':
                   if (argv[i][j+1] == '-') {
-                     warn_unused_evparam = 0;
+                     warn_unused_evparam = false;
                      j++;
-                  } else warn_unused_evparam = 1;
+                  } else warn_unused_evparam = true;
                   break;
 #ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;
@@ -886,9 +886,9 @@ nextarg:
    if ( script ) {
       LOG(LOG_INFO, NULL, "Script parsed, collecting symbols");
       script->collect_symbols();
-      LOG(LOG_INFO, NULL, "Propogating types");
-      script->propogate_types();
-      script->propogate_values();
+      LOG(LOG_INFO, NULL, "Propagating types");
+      script->propagate_types();
+      script->propagate_values();
       script->check_symbols();
       script->final_pre_walk();
       Logger::get()->report();

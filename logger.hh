@@ -92,12 +92,12 @@ enum ErrorCode {
     W_CHANGE_STATE_HACK,               // 20005
     W_MULTIPLE_JUMPS_FOR_LABEL,        // 20006
     W_EMPTY_IF,                        // 20007
-    W_BAD_DECIMAL_LEX,                 // 20008
+    W_removed_1,                       // 20008
     W_DECLARED_BUT_NOT_USED,           // 20009
     W_LIST_COMPARE,                    // 20010
     W_CONDITION_ALWAYS_TRUE,           // 20011
     W_CONDITION_ALWAYS_FALSE,          // 20012
-    W_removed_1,                       // 20013
+    W_removed_2,                       // 20013
     W_UNUSED_EVENT_PARAMETER,          // 20014
     W_LAST,
 

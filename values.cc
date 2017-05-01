@@ -1,6 +1,6 @@
 #include "lslmini.hh"
 
-void LLASTNode::propogate_values() {
+void LLASTNode::propagate_values() {
    LLASTNode             *node = get_children();
    if ( node != NULL ) {
       /*
@@ -8,12 +8,12 @@ void LLASTNode::propogate_values() {
          node = node->get_next(); // start with last node
 
          while ( node )  {
-         node->propogate_values();
+         node->propagate_values();
          node = node->get_prev();
          }
          */
       while ( node ) {
-         node->propogate_values();
+         node->propagate_values();
          node = node->get_next();
       }
    }

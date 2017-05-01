@@ -286,17 +286,15 @@ const char *Logger::warning_messages[] = {
       "If this is what you intended, consider using return instead.", // 20003
    "Changing state in a list or string function will corrupt the stack.\n"
       "Using the return value from this function will cause a run-time bounds check error.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack", // 20004
+      "See: http://lsl.project.zone/lsl/language/state#hacks",        // 20004
    "Using an if statement to change state in a function is a hack and may have unintended side-effects.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack", // 20005
+      "See: http://lsl.project.zone/lsl/language/state#hacks",        // 20005
    "Multiple jumps for label `%s' - only the last will execute.",     // 20006
    "Empty if statement.",                                             // 20007
-   "`%s' treated as %d; this is probably not what you wanted.\n"
-      "Make sure you separate opeartors with spaces.\n"
-      "See: http://forums.secondlife.com/showthread.php?t=60257",     // 20008
+   "",                                                                // 20008
    "%s `%s' declared but never used.",                                // 20009
    "Using == on lists only compares lengths.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=annoyances", // 20010
+      "See: http://wiki.secondlife.com/wiki/List#Comparing_Lists",    // 20010
    "Condition is always true.",                                       // 20011
    "Condition is always false.",                                      // 20012
    "",                                                                // 20013 (unused)

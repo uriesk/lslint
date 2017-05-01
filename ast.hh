@@ -166,12 +166,12 @@ class LLASTNode {
     void collect_symbols();
     virtual void define_symbols();
 
-    // propogate types   TODO: rename to propogate_and_check_type / determine_and_check_type ?
-    void propogate_types();
+    // propagate types   TODO: rename to propagate_and_check_type / determine_and_check_type ?
+    void propagate_types();
     virtual void determine_type();
 
-    // propogate const values     TODO: come up with a better name?
-    void propogate_values();
+    // propagate const values     TODO: come up with a better name?
+    void propagate_values();
     virtual void determine_value();
 
     // final pre walk checks    TODO: come up with a better name?

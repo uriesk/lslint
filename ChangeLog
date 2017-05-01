@@ -72,7 +72,7 @@
 	- internal:
 		- rewritten as pure/reentrant parser/lexer
 		- logging abstracted for later sorting support
-		- track and propogate constant values
+		- track and propagate constant values
 		- better location tracking
 		- fixed list parsing
 
