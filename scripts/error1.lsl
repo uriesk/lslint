@@ -29,9 +29,6 @@ default {
         LLsay(0, llListToString([])); // typos; suggest llSay, llList2String    $[E10007] $[E10007]
         test(1, "hi");              // arg 2 should be vector not string        $[E10011]
         jump number;                // number is not a label                    $[E10005]
-        jump label;                 // warning: when using multiple jumps to
-        jump label;                 //    one label, all but last is ignored    $[E20006]
-        @label;
         return number;              // returning a value in an event            $[E10017]
         state default;              // warning: state current acts like return  $[E20003]
                                     // warning: code is never reached?
