@@ -68,6 +68,7 @@ bool mono_mode = true;
 bool skip_preproc = false;
 bool warn_unused_evparam = false;
 bool switch_stmt = false;
+bool lazy_lists = false;
 
 void print_walk( char *str ) {
    int i;
@@ -367,6 +368,19 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
 
    // Look up the symbol with the requested type
    symbol = lookup_symbol( name, symbol_type );
+
+   // Provisional hack: if the lazy_list_set function is undefined,
+   // define the symbol here.
+   if (lazy_lists && symbol == NULL && !strcmp(name, "lazy_list_set")
+       && lookup_symbol(name, SYM_ANY) == NULL) {
+      LLScriptFunctionDec *dec = new LLScriptFunctionDec();
+      dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "inputlist"));
+      dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_INTEGER), "index"));
+      dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "value"));
+      symbol = new LLScriptSymbol(strdup(name), LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec);
+      script->define_symbol(symbol);
+
+   }
 
    if ( symbol == NULL ) {                       // no symbol of the right type
       symbol = lookup_symbol( name, SYM_ANY );    // so try the wrong one, so we can have a more descriptive error message in that case.
@@ -754,6 +768,8 @@ void usage(char *name) {
    printf("\t-u-\t\tDon't warn about unused event parameters (default)\n");
    printf("\t-w\t\tEnable switch statements\n");
    printf("\t-w-\t\tDisable switch statements (default)\n");
+   printf("\t-z\t\tEnable lazy list syntax\n");
+   printf("\t-z-\t\tDisable lazy list syntax (default)\n");
 #ifdef COMPILE_ENABLED
    printf("\t-c\t\tCompile.\t\t\t(default)\n");
    printf("\t-C\t\tDon't compile.\n");
@@ -852,6 +868,12 @@ int main(int argc, char **argv) {
                      switch_stmt = false;
                      j++;
                   } else switch_stmt = true;
+                  break;
+               case 'z':
+                  if (argv[i][j+1] == '-') {
+                     lazy_lists = false;
+                     j++;
+                  } else lazy_lists = true;
                   break;
 #ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;

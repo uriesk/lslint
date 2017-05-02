@@ -85,40 +85,6 @@
 %token					CASE
 %token					BREAK
 
-%token					STATE_ENTRY
-%token					STATE_EXIT
-%token					TOUCH_START
-%token					TOUCH
-%token					TOUCH_END
-%token					COLLISION_START
-%token					COLLISION
-%token					COLLISION_END
-%token					LAND_COLLISION_START
-%token					LAND_COLLISION
-%token					LAND_COLLISION_END
-%token					TIMER
-%token					CHAT
-%token					SENSOR
-%token					NO_SENSOR
-%token					CONTROL
-%token					AT_TARGET
-%token					NOT_AT_TARGET
-%token					AT_ROT_TARGET
-%token					NOT_AT_ROT_TARGET
-%token					MONEY
-%token					EMAIL
-%token					RUN_TIME_PERMISSIONS
-%token					INVENTORY
-%token					ATTACH
-%token					DATASERVER
-%token					MOVING_START
-%token					MOVING_END
-%token					REZ
-%token					OBJECT_REZ
-%token					LINK_MESSAGE
-%token					REMOTE_DATA
-%token					HTTP_RESPONSE
-
 %token <sval>			IDENTIFIER
 %token <sval>			STATE_DEFAULT
 
@@ -541,6 +507,10 @@ compound_statement
 	{
 		$$ = new LLScriptCompoundStatement($2);
 	}
+	| '{' error '}'
+	{
+		$$ = new LLScriptStatement(0);
+	}
 	;
 
 statements
@@ -785,6 +755,24 @@ expression
 	{
 		$$ = new LLScriptExpression( $1, '=', $3 );
 	}
+	| IDENTIFIER '[' expression ']' '=' expression
+	{
+		if (! lazy_lists) {
+			ERROR( &@2, E_SYNTAX_ERROR, "Unexpected '[' - did you forget to activate lazy lists?" );
+			// Ignore the [expression] part and treat it as IDENTIFIER = $6 - that will cause further errors
+			$$ = new LLScriptExpression( new LLScriptLValueExpression(new LLScriptIdentifier($1)), '=', $6 );
+		} else {
+			// Convert the assignment into a function call to lazy_list_set
+			char *lazy_list_set = new char[14];
+			strcpy(lazy_list_set, "lazy_list_set");
+			LLScriptExpression *params = new LLScriptLValueExpression(new LLScriptIdentifier($1));
+			params->add_next_sibling($3);
+			params->add_next_sibling(new LLScriptListExpression($6));
+			$$ = new LLScriptExpression( new LLScriptLValueExpression(new LLScriptIdentifier($1)), '=',
+				new LLScriptFunctionExpression(new LLScriptIdentifier(lazy_list_set), params)
+			);
+		}
+	}
 	| lvalue ADD_ASSIGN expression
 	{
 		// TODO: clean these up
@@ -946,6 +934,25 @@ typecast
 	| '(' typename ')' unarypostfixexpression
 	{
 		$$ = new LLScriptTypecastExpression($2, $4);
+	}
+	| '(' typename ')' IDENTIFIER '[' funcexpressionlist ']'
+	{
+		if (! lazy_lists) {
+			ERROR( &@5, E_SYNTAX_ERROR, "Unexpected '[' - did you forget to activate lazy lists?" );
+			$$ = new LLScriptTypecastExpression($2, new LLScriptExpression( new LLScriptLValueExpression( new LLScriptIdentifier($4) ), '-') );
+		} else {
+			char *fnname = new char[20]; // fits the longest string used here ("llList2quaternion")
+			strcpy(fnname, "llList2");
+			if ($2->get_itype() == LST_QUATERNION)
+				strcpy(fnname + 7, "Rot");
+			else {
+				strcpy(fnname + 7, $2->get_node_name());
+				fnname[7] &= ~0x20; // uppercase the first letter of the type
+			}
+			LLScriptLValueExpression *firstparam = new LLScriptLValueExpression(new LLScriptIdentifier($4));
+			firstparam->add_next_sibling($6);
+			$$ = new LLScriptFunctionExpression(new LLScriptIdentifier(fnname), firstparam);
+		}
 	}
 	| '(' typename ')' '(' expression ')'
 	{
