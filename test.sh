@@ -16,6 +16,12 @@ for f in scripts/*.lsl scripts/*/*.lsl ; do
     ./lslint -u -\# -A "$f" > ./test.run.txt 2>&1
   elif [ "${f#scripts/switch/}" != "$f" ] ; then
     ./lslint -w -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/lazylist/}" != "$f" ] ; then
+    ./lslint -z -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/fn_overr/}" != "$f" ] ; then
+    ./lslint -F -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/lz_overr/}" != "$f" ] ; then
+    ./lslint -zF -\# -A "$f" > ./test.run.txt 2>&1
   else
     # test in both mono and lso modes
     ./lslint -m -\# -A "$f" > ./test.run.txt 2>&1 \

@@ -69,6 +69,7 @@ bool skip_preproc = false;
 bool warn_unused_evparam = false;
 bool switch_stmt = false;
 bool lazy_lists = false;
+bool override_fn = false;
 
 void print_walk( char *str ) {
    int i;
@@ -138,11 +139,17 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
 
       // Check if already defined
       shadow = symbol_table->lookup( symbol->get_name() );
+      if ( override_fn && shadow && shadow->get_symbol_type() == SYM_FUNCTION && shadow->get_sub_type() != SYM_BUILTIN ) {
+         script->get_symbol_table()->remove(shadow);
+         shadow = NULL;
+      }
+
       if ( shadow ) {
-         if (shadow->get_sub_type() == SYM_BUILTIN) {
-            ERROR( IN(symbol), E_DUPLICATE_DECLARATION_EVENT, symbol->get_name() );
-         }
-         else {
+         if (shadow->get_symbol_type() == SYM_EVENT) {
+            ERROR( IN(symbol), E_DUPLICATE_DECLARATION_BUILTIN, symbol->get_name(), "an event", " function" );
+         } else if (shadow->get_symbol_type() == SYM_FUNCTION && shadow->get_sub_type() == SYM_BUILTIN) {
+            ERROR( IN(symbol), E_DUPLICATE_DECLARATION_BUILTIN, symbol->get_name(), "a library function", " user function" );
+         } else {
             ERROR( IN(symbol), E_DUPLICATE_DECLARATION, symbol->get_name(), shadow->get_lloc()->first_line, shadow->get_lloc()->first_column );
          }
       } else {
@@ -154,8 +161,7 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
             if ( shadow!= NULL ) {
                if (shadow->get_sub_type() == SYM_BUILTIN) {
                   ERROR( IN(symbol), E_SHADOW_CONSTANT, symbol->get_name());
-               }
-               else {
+               } else {
                   ERROR( IN(symbol), W_SHADOW_DECLARATION, symbol->get_name(), LINECOL(shadow->get_lloc()) );
                }
             }
@@ -368,19 +374,6 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
 
    // Look up the symbol with the requested type
    symbol = lookup_symbol( name, symbol_type );
-
-   // Provisional hack: if the lazy_list_set function is undefined,
-   // define the symbol here.
-   if (lazy_lists && symbol == NULL && !strcmp(name, "lazy_list_set")
-       && lookup_symbol(name, SYM_ANY) == NULL) {
-      LLScriptFunctionDec *dec = new LLScriptFunctionDec();
-      dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "inputlist"));
-      dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_INTEGER), "index"));
-      dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "value"));
-      symbol = new LLScriptSymbol(strdup(name), LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec);
-      script->define_symbol(symbol);
-
-   }
 
    if ( symbol == NULL ) {                       // no symbol of the right type
       symbol = lookup_symbol( name, SYM_ANY );    // so try the wrong one, so we can have a more descriptive error message in that case.
@@ -875,6 +868,12 @@ int main(int argc, char **argv) {
                      j++;
                   } else lazy_lists = true;
                   break;
+               case 'F':
+                  if (argv[i][j+1] == '-') {
+                     override_fn = false;
+                     j++;
+                  } else override_fn = true;
+                  break;
 #ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;
                case 'C': compile   = false; break;
@@ -915,6 +914,17 @@ nextarg:
    yylex_destroy( scanner );
 
    if ( script ) {
+      // Define the lazy_list_set function here if lazy lists are enabled.
+      if (lazy_lists) {
+         char *name = new char[14];
+         strcpy(name, "lazy_list_set");
+         LLScriptFunctionDec *dec = new LLScriptFunctionDec();
+         dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "inputlist"));
+         dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_INTEGER), "index"));
+         dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "value"));
+         script->define_symbol(new LLScriptSymbol(name, LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec));
+      }
+
       LOG(LOG_INFO, NULL, "Script parsed, collecting symbols");
       script->collect_symbols();
       LOG(LOG_INFO, NULL, "Propagating types");

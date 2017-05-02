@@ -273,7 +273,7 @@ const char *Logger::error_messages[] = {
    "Too many parameters for event `%s'.",                             // 10028
    "Too few parameters for event `%s'.",                              // 10029
    "`%s' is not a valid event name.",                                 // 10030
-   "`%s' is an event name, and cannot be used as a function name.",   // 10031
+   "`%s' is %s name, and cannot be used as a%s name.",                // 10031
    "Multiple handlers for event `%s'.",                               // 10032
    "break statement must be inside a switch statement.",              // 10033
    "Multiple default labels for switch statement.",                   // 10034
