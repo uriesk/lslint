@@ -471,7 +471,7 @@ class LLScriptWhileStatement : public LLScriptStatement {
 class LLScriptSwitchStatement : public LLScriptStatement {
   public:
     LLScriptSwitchStatement( class LLScriptExpression *expression, class LLScriptStatement *body )
-      : LLScriptStatement(2, expression, body) {};
+      : LLScriptStatement(2, expression, body) { symbol_table = new LLScriptSymbolTable(); };
     virtual char *get_node_name() { return "switch"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_SWITCH_STATEMENT; };
     virtual void final_pre_checks();

@@ -8,6 +8,7 @@ default
                  )
         {
             case i * 0 + 1:
+                integer j; j;
                 llOwnerSay("i is 1");
                 break;
             case 2 // unlike C, colon is not mandatory if a {} block follows
