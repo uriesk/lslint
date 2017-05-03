@@ -63,10 +63,13 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
    {NULL,                NULL},
 };
 
-int walklevel = 0;
-int mono_mode = 1;
-int skip_preproc = 0;
-int warn_unused_evparam = 0;
+static int walklevel = 0;
+bool mono_mode = true;
+bool skip_preproc = false;
+bool warn_unused_evparam = false;
+bool switch_stmt = false;
+bool lazy_lists = false;
+bool override_fn = false;
 
 void print_walk( char *str ) {
    int i;
@@ -110,7 +113,7 @@ void LLASTNode::walk() {
    }
 }
 
-// Lookup a symbol, propogating up the tree until it is found.
+// Lookup a symbol, propagating up the tree until it is found.
 LLScriptSymbol *LLASTNode::lookup_symbol(char *name, LLSymbolType type, bool is_case_sensitive) {
    LLScriptSymbol *sym = NULL;
 
@@ -125,7 +128,7 @@ LLScriptSymbol *LLASTNode::lookup_symbol(char *name, LLSymbolType type, bool is_
    return sym;
 }
 
-// Define a symbol, propogating up the tree to the nearest scope level.
+// Define a symbol, propagating up the tree to the nearest scope level.
 void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
 
    // If we have a symbol table, define it there
@@ -136,11 +139,17 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
 
       // Check if already defined
       shadow = symbol_table->lookup( symbol->get_name() );
+      if ( override_fn && shadow && shadow->get_symbol_type() == SYM_FUNCTION && shadow->get_sub_type() != SYM_BUILTIN ) {
+         script->get_symbol_table()->remove(shadow);
+         shadow = NULL;
+      }
+
       if ( shadow ) {
-         if (shadow->get_sub_type() == SYM_BUILTIN) {
-            ERROR( IN(symbol), E_DUPLICATE_DECLARATION_EVENT, symbol->get_name() );
-         }
-         else {
+         if (shadow->get_symbol_type() == SYM_EVENT) {
+            ERROR( IN(symbol), E_DUPLICATE_DECLARATION_BUILTIN, symbol->get_name(), "an event", " function" );
+         } else if (shadow->get_symbol_type() == SYM_FUNCTION && shadow->get_sub_type() == SYM_BUILTIN) {
+            ERROR( IN(symbol), E_DUPLICATE_DECLARATION_BUILTIN, symbol->get_name(), "a library function", " user function" );
+         } else {
             ERROR( IN(symbol), E_DUPLICATE_DECLARATION, symbol->get_name(), shadow->get_lloc()->first_line, shadow->get_lloc()->first_column );
          }
       } else {
@@ -152,8 +161,7 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
             if ( shadow!= NULL ) {
                if (shadow->get_sub_type() == SYM_BUILTIN) {
                   ERROR( IN(symbol), E_SHADOW_CONSTANT, symbol->get_name());
-               }
-               else {
+               } else {
                   ERROR( IN(symbol), W_SHADOW_DECLARATION, symbol->get_name(), LINECOL(shadow->get_lloc()) );
                }
             }
@@ -264,11 +272,11 @@ void LLScriptLabel::define_symbols() {
    define_symbol( identifier->get_symbol() );
 }
 
-// walk tree post-order and propogate types
-void LLASTNode::propogate_types() {
+// walk tree post-order and propagate types
+void LLASTNode::propagate_types() {
    LLASTNode             *node = get_children();
    while ( node ) {
-      node->propogate_types();
+      node->propagate_types();
       node = node->get_next();
    }
 
@@ -751,6 +759,10 @@ void usage(char *name) {
    printf("\t-i-\t\tDon't handle preproc. directives specially (default)\n");
    printf("\t-u\t\tWarn about unused event parameters\n");
    printf("\t-u-\t\tDon't warn about unused event parameters (default)\n");
+   printf("\t-w\t\tEnable switch statements\n");
+   printf("\t-w-\t\tDisable switch statements (default)\n");
+   printf("\t-z\t\tEnable lazy list syntax\n");
+   printf("\t-z-\t\tDisable lazy list syntax (default)\n");
 #ifdef COMPILE_ENABLED
    printf("\t-c\t\tCompile.\t\t\t(default)\n");
    printf("\t-C\t\tDon't compile.\n");
@@ -819,9 +831,9 @@ int main(int argc, char **argv) {
             switch( argv[i][j] ) {
                case 'm':
                   if (argv[i][j+1] == '-') {
-                     mono_mode = 0;
+                     mono_mode = false;
                      j++;
-                  } else mono_mode = 1;
+                  } else mono_mode = true;
                   break;
                case 'b': builtins_file = argv[++i]; goto nextarg;
                case 't': show_tree = true; break;
@@ -834,15 +846,33 @@ int main(int argc, char **argv) {
                case 'V': version(); return 0;
                case 'i':
                   if (argv[i][j+1] == '-') {
-                     skip_preproc = 0;
+                     skip_preproc = false;
                      j++;
-                  } else skip_preproc = 1;
+                  } else skip_preproc = true;
                   break;
                case 'u':
                   if (argv[i][j+1] == '-') {
-                     warn_unused_evparam = 0;
+                     warn_unused_evparam = false;
                      j++;
-                  } else warn_unused_evparam = 1;
+                  } else warn_unused_evparam = true;
+                  break;
+               case 'w':
+                  if (argv[i][j+1] == '-') {
+                     switch_stmt = false;
+                     j++;
+                  } else switch_stmt = true;
+                  break;
+               case 'z':
+                  if (argv[i][j+1] == '-') {
+                     lazy_lists = false;
+                     j++;
+                  } else lazy_lists = true;
+                  break;
+               case 'F':
+                  if (argv[i][j+1] == '-') {
+                     override_fn = false;
+                     j++;
+                  } else override_fn = true;
                   break;
 #ifdef COMPILE_ENABLED
                case 'c': compile   = true; break;
@@ -884,11 +914,22 @@ nextarg:
    yylex_destroy( scanner );
 
    if ( script ) {
+      // Define the lazy_list_set function here if lazy lists are enabled.
+      if (lazy_lists) {
+         char *name = new char[14];
+         strcpy(name, "lazy_list_set");
+         LLScriptFunctionDec *dec = new LLScriptFunctionDec();
+         dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "inputlist"));
+         dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_INTEGER), "index"));
+         dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "value"));
+         script->define_symbol(new LLScriptSymbol(name, LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec));
+      }
+
       LOG(LOG_INFO, NULL, "Script parsed, collecting symbols");
       script->collect_symbols();
-      LOG(LOG_INFO, NULL, "Propogating types");
-      script->propogate_types();
-      script->propogate_values();
+      LOG(LOG_INFO, NULL, "Propagating types");
+      script->propagate_types();
+      script->propagate_values();
       script->check_symbols();
       script->final_pre_walk();
       Logger::get()->report();

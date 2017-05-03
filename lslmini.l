@@ -86,7 +86,15 @@ FS			(f|F)
 "TRUE"				{ yylval->ival = 1; return(INTEGER_TRUE); }
 "FALSE"				{ yylval->ival = 0; return(INTEGER_FALSE); }
 
-{L}({L}|{N})*		{ yylval->sval = new char[strlen(yytext) + 1]; strcpy(yylval->sval, yytext); return(IDENTIFIER); }
+{L}({L}|{N})*		{
+		if (switch_stmt) {
+			if (!strcmp(yytext, "switch")) return(SWITCH);
+			if (!strcmp(yytext, "break")) return(BREAK);
+			if (!strcmp(yytext, "case")) return(CASE);
+		}
+		yylval->sval = new char[strlen(yytext) + 1]; strcpy(yylval->sval, yytext);
+		return(IDENTIFIER);
+	}
 
 {N}+{E}				{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 {N}*"."{N}+({E})?{FS}?	{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }

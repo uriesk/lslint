@@ -273,8 +273,11 @@ const char *Logger::error_messages[] = {
    "Too many parameters for event `%s'.",                             // 10028
    "Too few parameters for event `%s'.",                              // 10029
    "`%s' is not a valid event name.",                                 // 10030
-   "`%s' is an event name, and cannot be used as a function name.",   // 10031
+   "`%s' is %s name, and cannot be used as a%s name.",                // 10031
    "Multiple handlers for event `%s'.",                               // 10032
+   "break statement must be inside a switch statement.",              // 10033
+   "Multiple default labels for switch statement.",                   // 10034
+   "Case type incompatible with switch type.",                        // 10035
 
 };
 
@@ -286,19 +289,22 @@ const char *Logger::warning_messages[] = {
       "If this is what you intended, consider using return instead.", // 20003
    "Changing state in a list or string function will corrupt the stack.\n"
       "Using the return value from this function will cause a run-time bounds check error.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack", // 20004
+      "See: http://lsl.project.zone/lsl/language/state#hacks",        // 20004
    "Using an if statement to change state in a function is a hack and may have unintended side-effects.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=FunctionStateChangeHack", // 20005
+      "See: http://lsl.project.zone/lsl/language/state#hacks",        // 20005
    "Multiple jumps for label `%s' - only the last will execute.",     // 20006
    "Empty if statement.",                                             // 20007
-   "`%s' treated as %d; this is probably not what you wanted.\n"
-      "Make sure you separate opeartors with spaces.\n"
-      "See: http://forums.secondlife.com/showthread.php?t=60257",     // 20008
+   "",                                                                // 20008
    "%s `%s' declared but never used.",                                // 20009
    "Using == on lists only compares lengths.\n"
-      "See: http://secondlife.com/badgeo/wakka.php?wakka=annoyances", // 20010
+      "See: http://wiki.secondlife.com/wiki/List#Comparing_Lists",    // 20010
    "Condition is always true.",                                       // 20011
    "Condition is always false.",                                      // 20012
    "",                                                                // 20013 (unused)
    "Unused event parameter `%s'.",                                    // 20014
+   "Statements before the first case label won't be executed.",       // 20015
+   "Switch statement expression is constant.",                        // 20016
+   "No default label in switch; that may cause the statement to misbehave.\n"
+      "See: https://jira.phoenixviewer.com/browse/FIRE-17710",        // 20017
+   "Duplicate case label.",                                           // 20018
 };

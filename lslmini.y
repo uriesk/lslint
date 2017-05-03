@@ -81,39 +81,9 @@
 %token					JUMP
 %token					RETURN
 
-%token					STATE_ENTRY
-%token					STATE_EXIT
-%token					TOUCH_START
-%token					TOUCH
-%token					TOUCH_END
-%token					COLLISION_START
-%token					COLLISION
-%token					COLLISION_END
-%token					LAND_COLLISION_START
-%token					LAND_COLLISION
-%token					LAND_COLLISION_END
-%token					TIMER
-%token					CHAT
-%token					SENSOR
-%token					NO_SENSOR
-%token					CONTROL
-%token					AT_TARGET
-%token					NOT_AT_TARGET
-%token					AT_ROT_TARGET
-%token					NOT_AT_ROT_TARGET
-%token					MONEY
-%token					EMAIL
-%token					RUN_TIME_PERMISSIONS
-%token					INVENTORY
-%token					ATTACH
-%token					DATASERVER
-%token					MOVING_START
-%token					MOVING_END
-%token					REZ
-%token					OBJECT_REZ
-%token					LINK_MESSAGE
-%token					REMOTE_DATA
-%token					HTTP_RESPONSE
+%token					SWITCH
+%token					CASE
+%token					BREAK
 
 %token <sval>			IDENTIFIER
 %token <sval>			STATE_DEFAULT
@@ -231,7 +201,11 @@
 %type <expression>		expression
 %type <expression>		unaryexpression
 %type <expression>		typecast
+// TODO
+%type <statement>		switch_body
+%type <statement>		case_block
 
+%nonassoc INTEGER_CONSTANT FP_CONSTANT // solves 'expression FP_CONSTANT' conflicts
 %right '=' MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN
 %left 	BOOLEAN_AND BOOLEAN_OR
 %left	'|'
@@ -533,6 +507,10 @@ compound_statement
 	{
 		$$ = new LLScriptCompoundStatement($2);
 	}
+	| '{' error '}'
+	{
+		$$ = new LLScriptStatement(0);
+	}
 	;
 
 statements
@@ -613,9 +591,61 @@ statement
 	{
 		$$ = new LLScriptWhileStatement($3, $5);
 	}
+	| SWITCH '(' expression ')' '{' switch_body '}'
+	{
+		$$ = new LLScriptSwitchStatement($3, $6);
+	}
+	| SWITCH '(' expression ')' '{' statements switch_body '}'
+	{
+		ERROR(&@6, W_STATEMENTS_BEFORE_CASE);
+		$$ = new LLScriptSwitchStatement($3, $7);
+	}
+	| BREAK ';'
+	{
+		$$ = new LLScriptBreakStatement();
+	}
 	| error ';'
 	{
 		$$ = new LLScriptStatement(0);
+	}
+	;
+
+switch_body
+	: case_block
+	{
+		$$ = $1;
+	}
+	| switch_body case_block
+	{
+		$1->add_next_sibling($2);
+		$$ = $1;
+	}
+	;
+
+case_block
+	: STATE_DEFAULT ':'
+	{
+		$$ = new LLScriptCaseBlock(NULL, NULL);
+	}
+	| STATE_DEFAULT ':' statements
+	{
+		$$ = new LLScriptCaseBlock(NULL, $3);
+	}
+	| STATE_DEFAULT compound_statement // FS syntax extension
+	{
+		$$ = new LLScriptCaseBlock(NULL, $2);
+	}
+	| CASE expression ':'
+	{
+		$$ = new LLScriptCaseBlock($2, NULL);
+	}
+	| CASE expression ':' statements
+	{
+		$$ = new LLScriptCaseBlock($2, $4);
+	}
+	| CASE expression compound_statement // FS syntax extension
+	{
+		$$ = new LLScriptCaseBlock($2, $3);
 	}
 	;
 
@@ -724,6 +754,24 @@ expression
 	| lvalue '=' expression
 	{
 		$$ = new LLScriptExpression( $1, '=', $3 );
+	}
+	| IDENTIFIER '[' expression ']' '=' expression
+	{
+		if (! lazy_lists) {
+			ERROR( &@2, E_SYNTAX_ERROR, "Unexpected '[' - did you forget to activate lazy lists?" );
+			// Ignore the [expression] part and treat it as IDENTIFIER = $6 - that will cause further errors
+			$$ = new LLScriptExpression( new LLScriptLValueExpression(new LLScriptIdentifier($1)), '=', $6 );
+		} else {
+			// Convert the assignment into a function call to lazy_list_set
+			char *lazy_list_set = new char[14];
+			strcpy(lazy_list_set, "lazy_list_set");
+			LLScriptExpression *params = new LLScriptLValueExpression(new LLScriptIdentifier($1));
+			params->add_next_sibling($3);
+			params->add_next_sibling(new LLScriptListExpression($6));
+			$$ = new LLScriptExpression( new LLScriptLValueExpression(new LLScriptIdentifier($1)), '=',
+				new LLScriptFunctionExpression(new LLScriptIdentifier(lazy_list_set), params)
+			);
+		}
 	}
 	| lvalue ADD_ASSIGN expression
 	{
@@ -886,6 +934,25 @@ typecast
 	| '(' typename ')' unarypostfixexpression
 	{
 		$$ = new LLScriptTypecastExpression($2, $4);
+	}
+	| '(' typename ')' IDENTIFIER '[' funcexpressionlist ']'
+	{
+		if (! lazy_lists) {
+			ERROR( &@5, E_SYNTAX_ERROR, "Unexpected '[' - did you forget to activate lazy lists?" );
+			$$ = new LLScriptTypecastExpression($2, new LLScriptExpression( new LLScriptLValueExpression( new LLScriptIdentifier($4) ), '-') );
+		} else {
+			char *fnname = new char[20]; // fits the longest string used here ("llList2quaternion")
+			strcpy(fnname, "llList2");
+			if ($2->get_itype() == LST_QUATERNION)
+				strcpy(fnname + 7, "Rot");
+			else {
+				strcpy(fnname + 7, $2->get_node_name());
+				fnname[7] &= ~0x20; // uppercase the first letter of the type
+			}
+			LLScriptLValueExpression *firstparam = new LLScriptLValueExpression(new LLScriptIdentifier($4));
+			firstparam->add_next_sibling($6);
+			$$ = new LLScriptFunctionExpression(new LLScriptIdentifier(fnname), firstparam);
+		}
 	}
 	| '(' typename ')' '(' expression ')'
 	{

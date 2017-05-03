@@ -13,6 +13,16 @@ void LLScriptSymbolTable::define(LLScriptSymbol *symbol) {
    DEBUG( LOG_DEBUG_SPAM, NULL, "defined symbol: %d %s %s\n", symbol->get_symbol_type(), symbol->get_type() ? symbol->get_type()->get_node_name() : "!!!NULL!!!", symbol->get_name() );
 }
 
+void LLScriptSymbolTable::remove(LLScriptSymbol *symbol) {
+   for (std::vector<LLScriptSymbol *>::iterator i = symbols.begin();
+        i != symbols.end(); i++) {
+      if (*i == symbol) {
+        symbols.erase(i);
+        return;
+      }
+   }
+}
+
 LLScriptSymbol *LLScriptSymbolTable::lookup(char *name, LLSymbolType type, bool is_case_sensitive) {
    std::vector<LLScriptSymbol*>::const_iterator sym;
    int (*strcmpfunc)(const char *s1, const char *s2) = NULL;
@@ -34,7 +44,7 @@ void LLScriptSymbolTable::check_symbols() {
       if ( (*sym)->get_sub_type() != SYM_BUILTIN && (*sym)->get_sub_type() != SYM_EVENT_PARAMETER && (*sym)->get_references() == 0 ) {
          ERROR( IN(*sym), W_DECLARED_BUT_NOT_USED, LLScriptSymbol::get_type_name((*sym)->get_symbol_type()), (*sym)->get_name() );
       }
-      if ( warn_unused_evparam && (*sym)->get_sub_type() != SYM_BUILTIN && (*sym)->get_sub_type() == SYM_EVENT_PARAMETER && (*sym)->get_references() == 0 ) {
+      if ( warn_unused_evparam && (*sym)->get_sub_type() == SYM_EVENT_PARAMETER && (*sym)->get_references() == 0 ) {
          ERROR( IN(*sym), W_UNUSED_EVENT_PARAMETER, (*sym)->get_name() );
       }
    }

@@ -6,14 +6,26 @@ fi
 
 for f in scripts/*.lsl scripts/*/*.lsl ; do
   printf "%40s ... " "$f"
-  if [ "${f%.mono.lsl}" != "$f" ] ; then
+  if [ "${f#scripts/mono/}" != "$f" ] ; then
     ./lslint -m -\# -A "$f" > ./test.run.txt 2>&1
-  elif [ "${f%.lso.lsl}" != "$f" ] ; then
+  elif [ "${f#scripts/lso/}" != "$f" ] ; then
     ./lslint -m- -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/preproc/}" != "$f" ] ; then
+    ./lslint -i -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/uep/}" != "$f" ] ; then
+    ./lslint -u -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/switch/}" != "$f" ] ; then
+    ./lslint -w -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/lazylist/}" != "$f" ] ; then
+    ./lslint -z -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/fn_overr/}" != "$f" ] ; then
+    ./lslint -F -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/lz_overr/}" != "$f" ] ; then
+    ./lslint -zF -\# -A "$f" > ./test.run.txt 2>&1
   else
-    # test in both modes
-    ./lslint -m -\# -A "$f" > ./test.run.txt 2>&1
-    ./lslint -m- -\# -A "$f" > ./test.run.txt 2>&1
+    # test in both mono and lso modes
+    ./lslint -m -\# -A "$f" > ./test.run.txt 2>&1 \
+    && ./lslint -m- -\# -A "$f" > ./test.run.txt 2>&1
   fi
   if [ $? != 0 ] ; then
       echo "FAILED"

@@ -77,12 +77,15 @@ enum ErrorCode {
     E_TOO_MANY_ARGUMENTS_EVENT,        // 10028
     E_TOO_FEW_ARGUMENTS_EVENT,         // 10029
     E_INVALID_EVENT,                   // 10030
-    E_DUPLICATE_DECLARATION_EVENT,     // 10031
+    E_DUPLICATE_DECLARATION_BUILTIN,   // 10031
     E_MULTIPLE_EVENT_HANDLERS,         // 10032
-    E_LAST,
+    E_BREAK_WITHOUT_SWITCH,            // 10033
+    E_SWITCH_MULTIPLE_DEFAULTS,        // 10034
+    E_INCOMPATIBLE_CASE_TYPE,          // 10035
+    E_LAST
 
 
-
+    ,
     // warnings
     W_WARNING               = 20000,
     W_SHADOW_DECLARATION,              // 20001
@@ -92,14 +95,18 @@ enum ErrorCode {
     W_CHANGE_STATE_HACK,               // 20005
     W_MULTIPLE_JUMPS_FOR_LABEL,        // 20006
     W_EMPTY_IF,                        // 20007
-    W_BAD_DECIMAL_LEX,                 // 20008
+    W_removed_1,                       // 20008
     W_DECLARED_BUT_NOT_USED,           // 20009
     W_LIST_COMPARE,                    // 20010
     W_CONDITION_ALWAYS_TRUE,           // 20011
     W_CONDITION_ALWAYS_FALSE,          // 20012
-    W_removed_1,                       // 20013
+    W_removed_2,                       // 20013
     W_UNUSED_EVENT_PARAMETER,          // 20014
-    W_LAST,
+    W_STATEMENTS_BEFORE_CASE,          // 20015
+    W_CONSTANT_SWITCH,                 // 20016
+    W_SWITCH_NO_DEFAULT,               // 20017
+    W_DUPLICATE_CASE,                  // 20018
+    W_LAST
 
 };
 

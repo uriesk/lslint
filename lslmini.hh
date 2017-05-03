@@ -15,10 +15,11 @@ typedef float F32;
 #define MAX_NODES       3
 
 extern class LLScriptScript *script;
-extern int walklevel;
-extern int mono_mode;
-extern int skip_preproc;
-extern int warn_unused_evparam;
+extern bool mono_mode;
+extern bool skip_preproc;
+extern bool warn_unused_evparam;
+extern bool switch_stmt;
+extern bool lazy_lists;
 void print_walk(char *str);
 void do_walk(class LLASTNode *node);
 
@@ -45,11 +46,11 @@ class LLQuaternion {
     float x, y, z, s;
 };
 
-    
+
 class LLScriptScript : public LLASTNode {
   public:
     LLScriptScript( class LLScriptGlobalStorage *globals, class LLScriptState *states )
-      : LLASTNode( 2, globals, states ) {
+      : LLASTNode( 2, globals, states ), switchlevel(0) {
         symbol_table = new LLScriptSymbolTable();
     };
     LLScriptScript() : LLASTNode( 0 ) {
@@ -61,6 +62,11 @@ class LLScriptScript : public LLASTNode {
     void define_builtins();
     virtual char *get_node_name() { return "script"; };
     virtual LLNodeType get_node_type() { return NODE_SCRIPT; };
+    int get_switchlevel() { return switchlevel; }
+    void inc_switchlevel() { switchlevel++; }
+    void dec_switchlevel() { switchlevel--; }
+  private:
+    int switchlevel;
 };
 
 class LLScriptGlobalStorage : public LLASTNode {
@@ -411,6 +417,14 @@ class LLScriptLabel : public LLScriptStatement {
     virtual LLNodeSubType get_node_sub_type() { return NODE_LABEL; };
 };
 
+class LLScriptCaseBlock : public LLScriptStatement {
+  public:
+    LLScriptCaseBlock( class LLScriptExpression *expression, class LLScriptStatement *body )
+      : LLScriptStatement(2, expression, body) {};
+    virtual char *get_node_name() { return "case block"; };
+    virtual LLNodeSubType get_node_sub_type() { return NODE_CASE_LABEL; };
+};
+
 class LLScriptReturnStatement : public LLScriptStatement {
   public:
     LLScriptReturnStatement( class LLScriptExpression *expression ) : LLScriptStatement(1, expression) {};
@@ -452,6 +466,24 @@ class LLScriptWhileStatement : public LLScriptStatement {
       : LLScriptStatement(2, condition, body) {};
     virtual char *get_node_name() { return "while"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_WHILE_STATEMENT; };
+};
+
+class LLScriptSwitchStatement : public LLScriptStatement {
+  public:
+    LLScriptSwitchStatement( class LLScriptExpression *expression, class LLScriptStatement *body )
+      : LLScriptStatement(2, expression, body) {};
+    virtual char *get_node_name() { return "switch"; };
+    virtual LLNodeSubType get_node_sub_type() { return NODE_SWITCH_STATEMENT; };
+    virtual void final_pre_checks();
+    virtual void final_post_checks();
+};
+
+class LLScriptBreakStatement : public LLScriptStatement {
+  public:
+    LLScriptBreakStatement( ) : LLScriptStatement(0) {};
+    virtual char *get_node_name() { return "break"; };
+    virtual LLNodeSubType get_node_sub_type() { return NODE_BREAK_STATEMENT; };
+    virtual void final_pre_checks();
 };
 
 

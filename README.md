@@ -34,7 +34,11 @@ wrong, and is not recommended as a base for anything but a lint tool.
     * Side effects includes x86_64 binary, x86 is possible still
 
 #### Sei-Lisa
-* added Mono mode (-m to Mono(default), -M to LSL2)
+* added Mono mode (-m for Mono(default), -m- for LSO)
+* added option to make the warning on unused event parameters optional (-u to enable, -u- to disable)
+* added option to ignore preprocessor commands (-i)
+* added switch() statement support
+* numerous bug fixes
 
 #### Special Thanks
 * Strife Onizuka

@@ -29,7 +29,7 @@ enum LLNodeType {
 // Node Sub-types
 enum LLNodeSubType {
 
-  NODE_NO_SUB_TYPE, 
+  NODE_NO_SUB_TYPE,
 
   NODE_INTEGER_CONSTANT,
   NODE_FLOAT_CONSTANT,
@@ -41,11 +41,14 @@ enum LLNodeSubType {
   NODE_COMPOUND_STATEMENT,
   NODE_RETURN_STATEMENT,
   NODE_LABEL,
+  NODE_CASE_LABEL,
   NODE_JUMP_STATEMENT,
   NODE_IF_STATEMENT,
   NODE_FOR_STATEMENT,
   NODE_DO_STATEMENT,
   NODE_WHILE_STATEMENT,
+  NODE_SWITCH_STATEMENT,
+  NODE_BREAK_STATEMENT,
   NODE_DECLARATION,
   NODE_STATE_STATEMENT,
 
@@ -96,7 +99,7 @@ class LLASTNode {
     void                set_type(LLScriptType *_type) { type = _type;   }
     class LLScriptType *get_type()                    { return type;    }
 
-    
+
     // Add a child to beginning of list. Not sure if this will be used yet.
     void    add_child( LLASTNode *child ) {
       if ( child == NULL ) return;
@@ -104,7 +107,7 @@ class LLASTNode {
       child->set_parent(this);
       children  = child;
     }
-   
+
 
     // Add child to end of list.
     void    push_child( LLASTNode *child ) {
@@ -157,7 +160,7 @@ class LLASTNode {
     }
 
     /// passes                  ///
-    
+
     // walk through tree, printing out names
     void walk();
 
@@ -166,17 +169,18 @@ class LLASTNode {
     void collect_symbols();
     virtual void define_symbols();
 
-    // propogate types   TODO: rename to propogate_and_check_type / determine_and_check_type ?
-    void propogate_types();
+    // propagate types   TODO: rename to propagate_and_check_type / determine_and_check_type ?
+    void propagate_types();
     virtual void determine_type();
 
-    // propogate const values     TODO: come up with a better name?
-    void propogate_values();
+    // propagate const values     TODO: come up with a better name?
+    void propagate_values();
     virtual void determine_value();
 
     // final pre walk checks    TODO: come up with a better name?
     void final_pre_walk();
-    virtual void final_pre_checks();
+    virtual void final_pre_checks() {};
+    virtual void final_post_checks() {};
 
     // compile
     virtual void generate_cil() {};
@@ -195,7 +199,7 @@ class LLASTNode {
     virtual char       *get_node_name() { return "node";    };
     virtual LLNodeType  get_node_type() { return NODE_NODE; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_NO_SUB_TYPE; }
-    
+
     /// constants ///
     bool            is_constant()           { return constant_value != NULL; };
     class LLScriptConstant  *get_constant_value()    { return constant_value; };
@@ -212,7 +216,7 @@ class LLASTNode {
     LLASTNode                   *prev;
     YYLTYPE                      lloc;
     static YYLTYPE               glloc;
-};   
+};
 
 class LLASTNullNode : public LLASTNode {
   virtual LLNodeType get_node_type() { return NODE_NULL; };

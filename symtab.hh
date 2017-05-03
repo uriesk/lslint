@@ -62,6 +62,7 @@ class LLScriptSymbolTable {
   public:
     LLScriptSymbol *lookup( char *name, LLSymbolType type = SYM_ANY, bool is_case_sensitive = true );
     void            define( LLScriptSymbol *symbol );
+    void            remove( LLScriptSymbol *symbol );
     void            check_symbols();
 
   private:
