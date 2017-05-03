@@ -70,8 +70,8 @@ enum ErrorCode {
     E_NO_OPERATOR,                     // 10021
     E_NO_EVENT_HANDLERS,               // 10022
     E_removed_1,                       // 10023
-    E_BUILTIN_LVALUE,                  // 10024
-    E_SHADOW_CONSTANT,                 // 10025
+    E_removed_2,                       // 10024
+    E_removed_3,                       // 10025
     E_NOT_ALL_PATHS_RETURN,            // 10026
     E_ARGUMENT_WRONG_TYPE_EVENT,       // 10027
     E_TOO_MANY_ARGUMENTS_EVENT,        // 10028

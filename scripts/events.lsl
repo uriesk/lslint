@@ -38,17 +38,19 @@ default {
    }
    // FIXME: Wrong error location for E10028
    changed             // $[E10028] too many params
-          (integer changed
+          (integer
+                   changed           // $[E10005] it's an event name
                           ,          // Correct location for [E10028]
                             integer  // Acceptable location for [E10028]
                                     extra) {
    }
-   // FIXME: Should not emit E10006
-   foo                 // $[E10006] (undeclared)????, $[E10030] invalid event
+   foo                 // $[E10030] invalid event
       () {
    }
-   // FIXME: Should not emit E10006
-   bar                 // $[E10006] (undeclared)????, $[E10030] invalid event
+   bar                 // $[E10030] invalid event
       (integer baz) {
+   }
+   TEXTURE_BLANK       // $[E10030] $[E10005] attempt to use as event but it's constant (FIXME: error message can be improved)
+                (integer x) {
    }
 }

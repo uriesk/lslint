@@ -247,7 +247,7 @@ const char *Logger::error_messages[] = {
    "Invalid operator: %s %s %s.",                                     // 10002
    "`%s' is deprecated.",                                             // 10003
    "`%s' is deprecated, use %s instead.",                             // 10004
-   "Attempting to use `%s' as a %s, but it is a %s.",                 // 10005
+   "Attempting to use `%s' as a %s, but it is a%s %s.",               // 10005
    "`%s' is undeclared.",                                             // 10006
    "`%s' is undeclared; did you mean %s?",                            // 10007
    "Invalid member: `%s.%s'.",                                        // 10008
@@ -266,8 +266,8 @@ const char *Logger::error_messages[] = {
    "Expression and constant without operator.",                       // 10021
    "State must have at least one event handler.",                     // 10022
    "",                                                                // 10023
-   "`%s' is a constant and cannot be used as an lvalue.",             // 10024
-   "`%s' is a constant and cannot be used in a variable declaration.", // 10025
+   "",                                                                // 10024
+   "",                                                                // 10025
    "Not all code paths return a value.",                              // 10026
    "Declaring `%s' as parameter %d of `%s' which should be `%s %s'.", // 10027
    "Too many parameters for event `%s'.",                             // 10028

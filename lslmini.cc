@@ -34,7 +34,7 @@ std::string getBuildDate() {
 	// for more information about date/time format
 	strftime(buf, sizeof(buf), "%m/%d/%Y", &tstruct);
    return buf;
-/*/
+ */
 #endif
 }
 
@@ -139,8 +139,11 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
 
       // Check if already defined
       shadow = symbol_table->lookup( symbol->get_name() );
+
+      // Override?
       if ( override_fn && shadow && shadow->get_symbol_type() == SYM_FUNCTION && shadow->get_sub_type() != SYM_BUILTIN ) {
          script->get_symbol_table()->remove(shadow);
+         delete shadow;
          shadow = NULL;
       }
 
@@ -153,18 +156,36 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
             ERROR( IN(symbol), E_DUPLICATE_DECLARATION, symbol->get_name(), shadow->get_lloc()->first_line, shadow->get_lloc()->first_column );
          }
       } else {
-         symbol_table->define(symbol);
+         bool ok_to_define = true;
 
          // Check for shadowed declarations
          if ( parent ) {
-            shadow = parent->lookup_symbol(symbol->get_name(), symbol->get_symbol_type());
+            shadow = parent->lookup_symbol(symbol->get_name(), SYM_ANY);
+
             if ( shadow!= NULL ) {
                if (shadow->get_sub_type() == SYM_BUILTIN) {
-                  ERROR( IN(symbol), E_SHADOW_CONSTANT, symbol->get_name());
-               } else {
+
+                  // Events and constants are reserved; functions aren't.
+                  if (shadow->get_symbol_type() == SYM_EVENT) {
+                     ok_to_define = false;
+                     ERROR( IN(symbol), E_WRONG_TYPE, symbol->get_name(),
+                            LLScriptSymbol::get_type_name(symbol->get_symbol_type()),
+                            "n", "event" );
+                  } else if (shadow->get_symbol_type() == SYM_VARIABLE) {
+                     ok_to_define = false;
+                     ERROR( IN(symbol), E_WRONG_TYPE, symbol->get_name(),
+                            LLScriptSymbol::get_type_name(symbol->get_symbol_type()),
+                            "", "constant");
+                  }
+
+               } else if (shadow->get_symbol_type() == symbol->get_symbol_type()) {
                   ERROR( IN(symbol), W_SHADOW_DECLARATION, symbol->get_name(), LINECOL(shadow->get_lloc()) );
                }
             }
+         }
+
+         if (ok_to_define) {
+            symbol_table->define(symbol);
          }
       }
 
@@ -328,7 +349,8 @@ void LLScriptExpression::determine_type() {
                LLScriptIdentifier *id = (LLScriptIdentifier*)get_child(0)->get_child(0);
                if ( id->get_symbol() ) {
                   if (id->get_symbol()->get_sub_type() == SYM_BUILTIN) {
-                     ERROR( HERE, E_BUILTIN_LVALUE, id->get_symbol()->get_name());
+                     ERROR( HERE, E_WRONG_TYPE, id->get_symbol()->get_name(),
+                            "variable", "", "constant");
                   }
                   id->get_symbol()->add_assignment();
                }
@@ -375,14 +397,20 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
    // Look up the symbol with the requested type
    symbol = lookup_symbol( name, symbol_type );
 
-   if ( symbol == NULL ) {                       // no symbol of the right type
+   if ( symbol == NULL ) {                        // no symbol of the right type
       symbol = lookup_symbol( name, SYM_ANY );    // so try the wrong one, so we can have a more descriptive error message in that case.
       if (symbol != NULL) {
-         ERROR( HERE, E_WRONG_TYPE, name,
-               LLScriptSymbol::get_type_name(symbol_type),
-               LLScriptSymbol::get_type_name(symbol->get_symbol_type())
-              );
-      } else {
+         if (symbol->get_symbol_type() == SYM_EVENT) {
+            ERROR( HERE, E_WRONG_TYPE, name,
+                  LLScriptSymbol::get_type_name(symbol_type),
+                  "n", "event"
+                 );
+         } else {
+            ERROR( HERE, E_WRONG_TYPE, name,
+                   LLScriptSymbol::get_type_name(symbol_type),
+                   "", LLScriptSymbol::get_type_name(symbol->get_symbol_type()));
+         }
+      } else if (symbol_type != SYM_EVENT) { // if it's an event, don't report undefined identifier
          // look for typos
          // FIXME: this is mostly hacked together and unsafe (bp can overrun buffer, cur_sug can overrun suggestions)
          // maybe a better way would be to go through all the symtabs looking for names within a certain "string distance"
