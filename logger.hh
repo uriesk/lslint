@@ -82,6 +82,7 @@ enum ErrorCode {
     E_BREAK_WITHOUT_SWITCH,            // 10033
     E_SWITCH_MULTIPLE_DEFAULTS,        // 10034
     E_INCOMPATIBLE_CASE_TYPE,          // 10035
+    E_DECLARATION_NOT_ALLOWED,         // 10036
     E_LAST
 
 

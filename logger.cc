@@ -278,6 +278,7 @@ const char *Logger::error_messages[] = {
    "break statement must be inside a switch statement.",              // 10033
    "Multiple default labels for switch statement.",                   // 10034
    "Case type incompatible with switch type.",                        // 10035
+   "Declaration needs braces {}."                                     // 10036
 
 };
 
