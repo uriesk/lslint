@@ -996,7 +996,14 @@ unarypostfixexpression
 	}
 	| PRINT '(' expression ')'
 	{
-		/* FIXME: What does this do? */
+		if (mono_mode)
+			ERROR( &@1, W_PRINT, "will cause the compilation to fail");
+		else
+			ERROR( &@1, W_PRINT, "may cause a runtime error");
+		// Result is the same type as the expression, but without a
+		// value. As a compromise, we return the expression because
+		// we can't fetch the type at this point.
+		$$ = $3;
 	}
 	| constant
 	{

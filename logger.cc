@@ -309,4 +309,5 @@ const char *Logger::warning_messages[] = {
    "Duplicate case label.",                                           // 20018
    "Prefixing a string with L will cause a double quote (\")\n"
      "to be inserted at the beginning of the string.",                // 20019
+   "print does nothing. Attempting to use the result %s.\n",     // 20020
 };
