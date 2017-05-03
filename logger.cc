@@ -307,4 +307,6 @@ const char *Logger::warning_messages[] = {
    "No default label in switch; that may cause the statement to misbehave.\n"
       "See: https://jira.phoenixviewer.com/browse/FIRE-17710",        // 20017
    "Duplicate case label.",                                           // 20018
+   "Prefixing a string with L will cause a double quote (\")\n"
+     "to be inserted at the beginning of the string.",                // 20019
 };

@@ -106,6 +106,7 @@ enum ErrorCode {
     W_CONSTANT_SWITCH,                 // 20016
     W_SWITCH_NO_DEFAULT,               // 20017
     W_DUPLICATE_CASE,                  // 20018
+    W_L_STRING,                        // 20019
     W_LAST
 
 };

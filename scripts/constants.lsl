@@ -19,5 +19,9 @@ default {
                = 2;
       PRIM_GLOW                    // $[E10024] invalid
                 = 2;
+
+      llOwnerSay(
+                 L"This is a long(?) string"   // $[E20019] Prepends a quote
+                                            );
    }
 }

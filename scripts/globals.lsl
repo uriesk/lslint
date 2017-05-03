@@ -32,18 +32,18 @@ float good_f15 = - PI;
 
 string good_s00;
 string good_s01 = "ok";
-string good_s02 = L"L";
+string good_s02 = L"x";      // $[E20019] prepends quote, like "x
 string good_s03 = good_s01;
-string good_s04 = good_s00; // TODO: Should emit warning in LSO
+string good_s04 = good_s00;  // TODO: Should emit warning in LSO
 key good_k00;
-string good_s05 = good_k00; // TODO: Should emit warning in LSO
+string good_s05 = good_k00;  // TODO: Should emit warning in LSO
 key good_k01 = "ok";
 string good_s06 = good_k01;
-key good_k02 = L"L";
-key good_k03 = good_s00; // TODO: Should emit warning in LSO
+key good_k02 = L"x";         // $[E20019]
+key good_k03 = good_s00;     // TODO: Should emit warning in LSO
 key good_k04 = good_s01;
 key good_k05 = good_k01;
-key good_k06 = good_k00; // TODO: Should emit warning in LSO
+key good_k06 = good_k00;     // TODO: Should emit warning in LSO
 
 vector good_v00;
 vector good_v01 = <0, 0, 0>;
