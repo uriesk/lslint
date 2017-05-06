@@ -34,6 +34,7 @@ class LLScriptSymbol {
         case SYM_FUNCTION:  return "function";
         case SYM_STATE:     return "state";
         case SYM_LABEL:     return "label";
+        case SYM_EVENT:     return "event";
         case SYM_ANY:       return "any";
         default:            return "invalid";
       }

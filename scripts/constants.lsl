@@ -1,23 +1,20 @@
 default {
    state_entry() {
+      integer x = PRIM_TEXTURE;
+      if (x == 17) 0;              // $[E20011] always true
+      integer y = PRIM_GLOW + PRIM_TEXTURE;
+      if (y == 42) 0;              // FIXME: should be $ [E20011] always true
       integer
-             x                     // $[E20009] unused
-               = PRIM_TEXTURE;
-      integer
-              y                    // $[E20009] unused
-                = PRIM_GLOW + PRIM_TEXTURE;
-      integer
-              // FIXME: should not emit E20009
-              PARCEL_DETAILS_DESC  // $[E20009] unused??, $[E10025] invalid
+              PARCEL_DETAILS_DESC  // $[E10005] invalid
                                  ;
       integer
-              // FIXME: should not emit E20009
-              PARCEL_DETAILS_NAME  // $[E20009] unused??, $[E10025] invalid
+              PARCEL_DETAILS_NAME  // $[E10005] invalid
                                   = 5;
+      if (PARCEL_DETAILS_NAME == 0) 0; // $[E20011] true (regression test)
 
       PRI_GLOW                     // $[E10006] undeclared
                = 2;
-      PRIM_GLOW                    // $[E10024] invalid
+      PRIM_GLOW                    // $[E10005] invalid
                 = 2;
 
       llOwnerSay(
@@ -37,5 +34,6 @@ default {
                      +
                        1E+2f // $[E10019]
                             ;
+
    }
 }

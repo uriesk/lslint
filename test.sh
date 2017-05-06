@@ -22,6 +22,8 @@ for f in scripts/*.lsl scripts/*/*.lsl ; do
     ./lslint -F -\# -A "$f" > ./test.run.txt 2>&1
   elif [ "${f#scripts/lz_overr/}" != "$f" ] ; then
     ./lslint -zF -\# -A "$f" > ./test.run.txt 2>&1
+  elif [ "${f#scripts/todo/}" != "$f" ] ; then
+    true # skip these tests
   else
     # test in both mono and lso modes
     ./lslint -m -\# -A "$f" > ./test.run.txt 2>&1 \
