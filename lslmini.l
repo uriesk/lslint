@@ -76,6 +76,7 @@ FS			(f|F)
 "for"				{ return(FOR); }
 "do"				{ return(DO); }
 "while"				{ return(WHILE); }
+"print"				{ return(PRINT); }
 
 "."					{ return(PERIOD); }
 
