@@ -217,6 +217,12 @@ void LLASTNode::define_symbols() {
 }
 
 void LLScriptDeclaration::define_symbols() {
+   LLNodeSubType type = get_parent()->get_node_sub_type();
+   if (   type == NODE_IF_STATEMENT || type == NODE_FOR_STATEMENT
+       || type == NODE_DO_STATEMENT || type == NODE_WHILE_STATEMENT) {
+      ERROR( HERE, E_DECLARATION_NOT_ALLOWED );
+      return;
+   }
    LLScriptIdentifier *identifier = (LLScriptIdentifier *)get_children();
    identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_LOCAL, identifier->get_lloc()) );
    define_symbol(identifier->get_symbol());
