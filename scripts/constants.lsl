@@ -35,5 +35,18 @@ default {
                        1E+2f // $[E10019]
                             ;
 
+      if (0) 0;                   // $[E20012] false
+      if (0.0) 0;                 // $[E20012] false
+      if (<0.0,0.0,0.0>) 0;       // $[E20012] false
+      if (<0.0,0.0,0.0,1.0>) 0;   // $[E20012] false
+      if (<0.0,0.0,0.0,0.0>) 0;   // $[E20011] true
+      if (<0.0,0.0,0.0,-1.0>) 0;  // $[E20011] true
+      if ("") 0;                  // $[E20012] false
+      if ((key)"") 0;             // TODO, should be [E20012] false
+      if ((key)TEXTURE_BLANK) 0;  // TODO, should be [E20011] true
+      if ((key)NULL_KEY) 0;       // TODO, should be [E20012] false
+      if ((key)"AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA") 0; // TODO, should be [E20011] true
+      if ([]) 0;                  // $[E20012] false
+      if (["", ""]) 0;            // $[E20011] true
    }
 }

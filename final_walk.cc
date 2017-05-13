@@ -60,9 +60,31 @@ void LLScriptGlobalFunction::final_pre_checks() {
 void LLScriptIfStatement::final_pre_checks() {
    // see if expression is constant
    if ( get_child(0)->get_constant_value() != NULL ) {
-      // TODO: can conditions be something other than integer?
-      if ( get_child(0)->get_constant_value()->get_node_sub_type() == NODE_INTEGER_CONSTANT ) {
-         if ( ((LLScriptIntegerConstant*)get_child(0)->get_constant_value())->get_value() ) {
+      int truth = 2; // 2 denotes that it hasn't been handled
+      LLNodeSubType type = get_child(0)->get_constant_value()->get_node_sub_type();
+      if ( type == NODE_INTEGER_CONSTANT ) {
+         truth = ((LLScriptIntegerConstant*)get_child(0)->get_constant_value())->get_value() != 0;
+      } else if (type == NODE_FLOAT_CONSTANT) {
+         truth = ((LLScriptFloatConstant*)get_child(0)->get_constant_value())->get_value() != 0.f;
+      } else if (type == NODE_STRING_CONSTANT) {
+         truth = ((LLScriptStringConstant*)get_child(0)->get_constant_value())->get_value()[0] != 0;
+      // TODO: key constants?
+      } else if (type == NODE_VECTOR_CONSTANT) {
+         LLVector *value = ((LLScriptVectorConstant*)get_child(0)->get_constant_value())->get_value();
+         truth = value->x != 0.f || value->y != 0.f || value->z != 0.f;
+      } else if (type == NODE_QUATERNION_CONSTANT) {
+         LLQuaternion *value = ((LLScriptQuaternionConstant*)get_child(0)->get_constant_value())->get_value();
+         truth = value->x != 0.f || value->y != 0.f || value->z != 0.f || value->s != 1.0f;
+      } else if (type == NODE_LIST_CONSTANT) {
+         int length = ((LLScriptListConstant*)get_child(0)->get_constant_value())->get_length();
+         truth = length > (mono_mode ? 0 : 1);
+      } else {
+         // you can't handle the truth
+      }
+
+      if (truth != 2) {
+         // valid
+         if (truth) {
             ERROR(IN(get_child(0)), W_CONDITION_ALWAYS_TRUE);
          } else {
             ERROR(IN(get_child(0)), W_CONDITION_ALWAYS_FALSE);
