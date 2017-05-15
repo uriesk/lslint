@@ -48,5 +48,7 @@ default {
       if ((key)"AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA") 0; // TODO, should be [E20011] true
       if ([]) 0;                  // $[E20012] false
       if (["", ""]) 0;            // $[E20011] true
+
+      if ("\t\t\t\t\t\t" == "                        ") 0; // $[E20011] true
    }
 }

@@ -163,14 +163,19 @@ L\"(\\.|[^\\"])*\"	{
 %%
 
 char *parse_string(char *input) {
-	char *str = new char[strlen(input) + 1 - 2];
+	char *str = new char[(strlen(input) - 2) * 2 + 1];
 	char *yp  = input + 1;
 	char *sp  = str;
 	while ( *yp ) {
 		if ( *yp == '\\' ) {
 			switch ( *++yp ) { 
 					case 'n':  *sp++ = '\n'; break;
-					case 't':  *sp++ = '\t'; break; // TODO: should this be \t or 4 spaces?
+					case 't':
+						*sp++ = ' ';
+						*sp++ = ' ';
+						*sp++ = ' ';
+						*sp++ = ' ';
+						break;
 					case '\\': *sp++ = '\\'; break;
 					case '"':  *sp++ = '"';  break;
 					default:   *sp++ = '\\'; *sp++ = *yp; break;
