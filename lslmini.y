@@ -1089,14 +1089,19 @@ static LLScriptSimpleAssignable *getSimpleAssignable(LLScriptExpression *express
 
       if (node->get_node_type() == NODE_IDENTIFIER) {
 
-        // Accept negative only if it's a builtins.txt integer or float constant
         LLScriptSymbol *symbol;
-        if (sign != -1 || ((symbol = script->get_symbol_table()->lookup(((LLScriptIdentifier *)node)->get_name()))
-            && symbol->get_symbol_type() == SYM_VARIABLE
-            && symbol->get_sub_type() == SYM_BUILTIN
-            && (symbol->get_type()->get_itype() == LST_INTEGER
-                || symbol->get_type()->get_itype() == LST_FLOATINGPOINT)))
-          identifier = (LLScriptIdentifier *)node;
+        if (((LLScriptIdentifier*)node)->get_member() == NULL) { // vector or rotation components not accepted
+          // Accept negative only if it's a builtins.txt integer or float constant
+          if (sign == 1
+              || ((symbol = script->get_symbol_table()->lookup(((LLScriptIdentifier *)node)->get_name()))
+                  && symbol->get_symbol_type() == SYM_VARIABLE
+                  && symbol->get_sub_type() == SYM_BUILTIN
+                  && (symbol->get_type()->get_itype() == LST_INTEGER
+                      || symbol->get_type()->get_itype() == LST_FLOATINGPOINT)
+                 )) {
+            identifier = (LLScriptIdentifier *)node;
+          }
+        }
 
       } else if (node->get_node_type() == NODE_CONSTANT) {
         subtype = node->get_node_sub_type();
