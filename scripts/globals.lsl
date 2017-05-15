@@ -74,14 +74,17 @@ float bad_f01 = -good_i01;   // $[E10020]
 float bad_f02 = -good_f01;   // $[E10020]
 float bad_f03 = -TRUE;       // $[E10020]
 float bad_f04 = -good_f01;   // $[E10020]
+float bad_f05 = good_v01.z;  // $[E10020]
 string bad_s01 = - "what?";  // $[E10020]
 vector bad_v01 = -<1,2,3>;   // $[E10020]
 vector bad_v02 = <1,2,[]>;   // $[E10020]
 vector bad_r01 = -r00;       // $[E10020]
+vector bad_r02 = <good_r01.x, good_r01.y, good_r01.z, good_r01.s>; // $[E10020]
 list bad_l01 = [-TRUE];      // $[E10020]
 list bad_l02 = [-<1,1,1>];   // $[E10020]
 list bad_l03 = [1,[2,3],4];  // $[E10020] TODO: add "Lists can't contain lists"
 list bad_l04 = -[1];         // $[E10020] (dubious - E10002 would be more appropriate here)
+list bad_l05 = [good_v01.x]; // $[E10020]
 
 default{timer(){
 
