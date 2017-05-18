@@ -29,4 +29,8 @@ llClearExperiencePermissions(k); // $[E10003] deprecated without replacement
 llCollisionSprite(s);         // $[E10003] deprecated without replacement
 l = llGetExperienceList(k);   // $[E10003] deprecated without replacement
 
+llGodLikeRezObject(k,v);      // $[E10037] requires god mode
+llSetInventoryPermMask(s,i,i);// $[E10037] requires god mode
+llSetObjectPermMask(i,i);     // $[E10037] requires god mode
+
 }}

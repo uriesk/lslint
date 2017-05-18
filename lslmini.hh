@@ -20,6 +20,7 @@ extern bool skip_preproc;
 extern bool warn_unused_evparam;
 extern bool switch_stmt;
 extern bool lazy_lists;
+extern bool god_mode;
 void print_walk(char *str);
 void do_walk(class LLASTNode *node);
 

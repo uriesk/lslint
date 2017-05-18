@@ -278,7 +278,8 @@ const char *Logger::error_messages[] = {
    "break statement must be inside a switch statement.",              // 10033
    "Multiple default labels for switch statement.",                   // 10034
    "Case type incompatible with switch type.",                        // 10035
-   "Declaration needs braces {}."                                     // 10036
+   "Declaration needs braces {}.",                                    // 10036
+   "`%s' requires god mode. Use lslint -G to enable god mode.",       // 10037
 
 };
 
@@ -310,5 +311,5 @@ const char *Logger::warning_messages[] = {
    "Duplicate case label.",                                           // 20018
    "Prefixing a string with L will cause a double quote (\")\n"
      "to be inserted at the beginning of the string.",                // 20019
-   "print does nothing. Attempting to use the result %s.\n",     // 20020
+   "print does nothing. Attempting to use the result %s.\n",          // 20020
 };

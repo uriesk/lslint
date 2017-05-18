@@ -71,7 +71,14 @@ const char *DEPRECATED_FUNCTIONS[][2] = {
    {"llClearExperiencePermissions", NULL},
    {"llCollisionSprite", NULL},
    {"llGetExperienceList", NULL},
-   {NULL,                NULL},
+   {NULL,                NULL}
+};
+
+const char *GOD_MODE_FUNCTIONS[] = {
+   "llGodLikeRezObject",
+   "llSetInventoryPermMask",
+   "llSetObjectPermMask",
+   NULL
 };
 
 static int walklevel = 0;
@@ -81,6 +88,7 @@ bool warn_unused_evparam = false;
 bool switch_stmt = false;
 bool lazy_lists = false;
 bool override_fn = false;
+bool god_mode = false;
 
 void print_walk( char *str ) {
    int i;
@@ -394,7 +402,7 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
       return;
    }
 
-   // If it's a builtin, check for deprecation
+   // If it's a builtin, check for deprecation/godmode
    if ( symbol_type == SYM_FUNCTION ) {
       int i;
       for ( i = 0; DEPRECATED_FUNCTIONS[i][0]; ++i ) {
@@ -407,6 +415,16 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
             symbol = NULL;
             type = TYPE(LST_ERROR);
             return;
+         }
+      }
+      if (!god_mode) {
+         for ( i = 0; GOD_MODE_FUNCTIONS[i]; ++i ) {
+            if ( !strcmp(name, GOD_MODE_FUNCTIONS[i]) ) {
+               ERROR(HERE, E_GOD_MODE_FUNCTION, name);
+               symbol = NULL;
+               type = TYPE(LST_ERROR);
+               return;
+            }
          }
       }
    }
@@ -790,8 +808,7 @@ void LLASTNode::check_symbols() {
 void usage(char *name) {
    printf("Usage: %s [options] [input]\n", name);
    printf("Options: \n");
-   printf("\t-m\t\tUse Mono rules for the analysis (default)\n");
-   printf("\t-m-\t\tUse LSO rules for the analysis\n");
+   printf("\t-m\t\tFlag: Use Mono rules for the analysis (default on)\n");
    printf("\t-b <file>\tLoad builtin functions from file\n");
    printf("\t-t\t\tShow tree structure.\n");
    printf("\t-l\t\tShow line/column information as range\n");
@@ -800,19 +817,18 @@ void usage(char *name) {
    printf("\t-S\t\tDon't sort log messages\n");
    printf("\t-#\t\tShow error codes (for debugging/testing)\n");
    printf("\t-A\t\tCheck error assertions (for debugging/testing)\n");
-   printf("\t-i\t\tTreat preprocessor directives as comments\n");
-   printf("\t-i-\t\tDon't handle preproc. directives specially (default)\n");
-   printf("\t-u\t\tWarn about unused event parameters\n");
-   printf("\t-u-\t\tDon't warn about unused event parameters (default)\n");
-   printf("\t-w\t\tEnable switch statements\n");
-   printf("\t-w-\t\tDisable switch statements (default)\n");
-   printf("\t-z\t\tEnable lazy list syntax\n");
-   printf("\t-z-\t\tDisable lazy list syntax (default)\n");
+   printf("\t-i\t\tFlag: Ignore preprocessor directives (default off)\n");
+   printf("\t-u\t\tFlag: Warn about unused event parameters (default off)\n");
+   printf("\t-w\t\tFlag: Enable switch statements (default off)\n");
+   printf("\t-z\t\tFlag: Enable lazy list syntax (default off)\n");
+   printf("\t-G\t\tFlag: Enable god mode (default off)\n");
 #ifdef COMPILE_ENABLED
-   printf("\t-c\t\tCompile.\t\t\t(default)\n");
-   printf("\t-C\t\tDon't compile.\n");
+   printf("\t-c\t\tFlag: Compile (default off)\n");
 #endif /* COMPILE_ENABLED */
    printf("\t-V\t\tPrint version and exit.\n");
+   printf("\n");
+   printf("Options that are flags can have a - sign at the end to disable them\n");
+   printf("(e.g. -m- to disable Mono and enable LSO)\n");
    return;
 }
 
@@ -851,6 +867,7 @@ void version() {
    fprintf(stderr, "                                         the road and crash your client\"\n");
    fprintf(stderr, " \n");
    fprintf(stderr, "Modified by: Makopoppo @ https://github.com/Makopo/lslint\n");
+   fprintf(stderr, "Modified by: Sei Lisa  @ https://github.com/Sei-Lisa/lslint\n");
    fprintf(stderr, "VS 2015  by: Xenhat    @ https://github.com/Ociidii-Works/lslint\n");
 }
 
@@ -919,9 +936,19 @@ int main(int argc, char **argv) {
                      j++;
                   } else override_fn = true;
                   break;
+               case 'G':
+                  if (argv[i][j+1] == '-') {
+                     god_mode = false;
+                     j++;
+                  } else god_mode = true;
+                  break;
 #ifdef COMPILE_ENABLED
-               case 'c': compile   = true; break;
-               case 'C': compile   = false; break;
+               case 'c':
+                  if (argv[i][j+1] == '-') {
+                     compile = false;
+                     j++;
+                  } else compile = true;
+                  break;
 #endif /* COMPILE_ENABLED */
                default: usage(argv[0]); exit(1);
             }

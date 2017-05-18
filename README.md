@@ -37,8 +37,10 @@ wrong, and is not recommended as a base for anything but a lint tool.
 * added Mono mode (-m for Mono(default), -m- for LSO)
 * added option to make the warning on unused event parameters optional (-u to enable, -u- to disable)
 * added option to ignore preprocessor commands (-i)
-* added switch() statement support
-* numerous bug fixes
+* added switch() statement and lazy list support
+* added god mode support
+* added reporting of several errors and warnings
+* numerous bug fixes and enhancements
 
 #### Special Thanks
 * Strife Onizuka
