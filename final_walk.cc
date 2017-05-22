@@ -104,6 +104,21 @@ void LLScriptIfStatement::final_pre_checks() {
    check_cond((LLScriptExpression*)get_child(0), true);
 }
 
+void LLScriptWhileStatement::final_pre_checks() {
+   check_cond((LLScriptExpression*)get_child(0), false);
+}
+
+void LLScriptDoStatement::final_pre_checks() {
+   check_cond((LLScriptExpression*)get_child(1), false);
+}
+
+void LLScriptForStatement::final_pre_checks() {
+// This needs more work in the parser to make the condition expression
+// distinguishable from the other expressions, as they are now all siblings
+// with no way to find out which one is the condition.
+//   check_cond((LLScriptExpression*)get_child(1), false);
+}
+
 void LLScriptEventHandler::final_pre_checks() {
    LLASTNode *node = NULL;
    bool is_last = true;

@@ -66,7 +66,7 @@ string Unescape(string a)
     integer e;
     integer f = 0; 
     string g;
-    while(d = llSubStringIndex(b, "\\") + 1)
+    while(d = llSubStringIndex(b, "\\") + 1)// $[E20002] No () around assignment
     {
         g = llGetSubString(b,d,d);
         c += d;
