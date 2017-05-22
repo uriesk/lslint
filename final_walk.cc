@@ -57,26 +57,26 @@ void LLScriptGlobalFunction::final_pre_checks() {
    }
 }
 
-void LLScriptIfStatement::final_pre_checks() {
+void check_cond(LLScriptExpression *expr, bool warn_if_true) {
    // see if expression is constant
-   if ( get_child(0)->get_constant_value() != NULL ) {
+   if ( expr->get_constant_value() != NULL ) {
       int truth = 2; // 2 denotes that it hasn't been handled
-      LLNodeSubType type = get_child(0)->get_constant_value()->get_node_sub_type();
+      LLNodeSubType type = expr->get_constant_value()->get_node_sub_type();
       if ( type == NODE_INTEGER_CONSTANT ) {
-         truth = ((LLScriptIntegerConstant*)get_child(0)->get_constant_value())->get_value() != 0;
+         truth = ((LLScriptIntegerConstant*)expr->get_constant_value())->get_value() != 0;
       } else if ( type == NODE_FLOAT_CONSTANT ) {
-         truth = ((LLScriptFloatConstant*)get_child(0)->get_constant_value())->get_value() != 0.f;
+         truth = ((LLScriptFloatConstant*)expr->get_constant_value())->get_value() != 0.f;
       } else if ( type == NODE_STRING_CONSTANT ) {
-         truth = ((LLScriptStringConstant*)get_child(0)->get_constant_value())->get_value()[0] != 0;
+         truth = ((LLScriptStringConstant*)expr->get_constant_value())->get_value()[0] != 0;
       // TODO: key constants?
       } else if ( type == NODE_VECTOR_CONSTANT ) {
-         LLVector *value = ((LLScriptVectorConstant*)get_child(0)->get_constant_value())->get_value();
+         LLVector *value = ((LLScriptVectorConstant*)expr->get_constant_value())->get_value();
          truth = value->x != 0.f || value->y != 0.f || value->z != 0.f;
       } else if ( type == NODE_QUATERNION_CONSTANT ) {
-         LLQuaternion *value = ((LLScriptQuaternionConstant*)get_child(0)->get_constant_value())->get_value();
+         LLQuaternion *value = ((LLScriptQuaternionConstant*)expr->get_constant_value())->get_value();
          truth = value->x != 0.f || value->y != 0.f || value->z != 0.f || value->s != 1.0f;
       } else if ( type == NODE_LIST_CONSTANT ) {
-         int length = ((LLScriptListConstant*)get_child(0)->get_constant_value())->get_length();
+         int length = ((LLScriptListConstant*)expr->get_constant_value())->get_length();
          truth = length > (mono_mode ? 0 : 1);
       } else {
          // you can't handle the truth
@@ -85,20 +85,23 @@ void LLScriptIfStatement::final_pre_checks() {
       if (truth != 2) {
          // valid
          if (truth) {
-            ERROR( IN(get_child(0)), W_CONDITION_ALWAYS_TRUE );
+            if (warn_if_true) {
+               ERROR( IN(expr), W_CONDITION_ALWAYS_TRUE );
+            }
          } else {
-            ERROR( IN(get_child(0)), W_CONDITION_ALWAYS_FALSE );
+            ERROR( IN(expr), W_CONDITION_ALWAYS_FALSE );
          }
       }
    }
 
    // see if expression is an assignment
-   if ( get_child(0)->get_node_type() == NODE_EXPRESSION ) {
-      LLScriptExpression *expr = (LLScriptExpression *)get_child(0);
-      if ( expr->get_operation() == '=' ) {
-         ERROR( IN(expr), W_ASSIGNMENT_IN_COMPARISON );
-      }
+   if ( expr->get_operation() == '=' ) {
+      ERROR( IN(expr), W_ASSIGNMENT_IN_COMPARISON );
    }
+}
+
+void LLScriptIfStatement::final_pre_checks() {
+   check_cond((LLScriptExpression*)get_child(0), true);
 }
 
 void LLScriptEventHandler::final_pre_checks() {
