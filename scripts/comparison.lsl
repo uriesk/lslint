@@ -18,13 +18,11 @@ if (~(3*5) == -16) 0;       // $[E20011]
 while (3 == 4) 1; // $[E20012] always false
 while (3 == 3) 0; // no warning
 
-/*
 for (1, 2, 3;
      FALSE                  // $[E20012] always false
      ; 1, 2, 3) 1;
 
 for (0, 0, 0; TRUE; 0, 0, 0) 0; // no warning
-*/
 
 do {
    1; 2; 3;
