@@ -41,11 +41,14 @@ void LLScriptExpression::determine_value() {
    if ( get_node_sub_type() != NODE_NO_SUB_TYPE && get_node_sub_type() != NODE_LVALUE_EXPRESSION )
       return; // only check normal and lvalue expressions
 
-   if ( operation == 0 )
-      constant_value = get_child(0)->get_constant_value();
-   else if ( operation == '=' )
+   if ( operation == 0 ) {
+      if ( get_child(1) == NULL )
+         constant_value = get_child(0)->get_constant_value();
+      else
+         constant_value = NULL;
+   } else if ( operation == '=' ) {
       constant_value = get_child(1)->get_constant_value();
-   else {
+   } else {
 
       LLScriptConstant *left  = get_child(0)->get_constant_value();
       LLScriptConstant *right = get_child(1) ? get_child(1)->get_constant_value() : NULL;

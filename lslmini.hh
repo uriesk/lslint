@@ -449,6 +449,7 @@ class LLScriptForStatement : public LLScriptStatement {
     LLScriptForStatement( class LLScriptExpression *init, class LLScriptExpression *condition,
         class LLScriptExpression *cont, class LLScriptStatement *body)
       : LLScriptStatement( 4, init, condition, cont, body ) {};
+    virtual void final_pre_checks();
     virtual char *get_node_name() { return "for"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_FOR_STATEMENT; };
 };
@@ -457,6 +458,7 @@ class LLScriptDoStatement : public LLScriptStatement {
   public:
     LLScriptDoStatement( class LLScriptStatement *body, class LLScriptExpression *condition )
       : LLScriptStatement(2, body, condition) {};
+    virtual void final_pre_checks();
     virtual char *get_node_name() { return "do"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_DO_STATEMENT; };
 };
@@ -465,6 +467,7 @@ class LLScriptWhileStatement : public LLScriptStatement {
   public:
     LLScriptWhileStatement( class LLScriptExpression *condition, class LLScriptStatement *body )
       : LLScriptStatement(2, condition, body) {};
+    virtual void final_pre_checks();
     virtual char *get_node_name() { return "while"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_WHILE_STATEMENT; };
 };

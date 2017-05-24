@@ -669,7 +669,7 @@ forexpressionlist
 	}
 	| nextforexpressionlist
 	{
-		$$ = $1;
+		$$ = new LLScriptExpression(1, $1);
 	}
 	;
 
