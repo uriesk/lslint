@@ -23,7 +23,7 @@ release_camera_control(key agent)
 {
     llOwnerSay("release_camera_control"); // say function name for debugging
     llSetCameraParams([CAMERA_ACTIVE, 0]); // 1 is active, 0 is inactive
-    llReleaseCamera(agent);
+    llReleaseCamera(agent);               // $[E10004] deprecated, use llClearCameraParams
     on = FALSE;
 } 
 
