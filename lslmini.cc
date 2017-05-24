@@ -614,15 +614,27 @@ void LLScriptStateStatement::determine_type() {
    if ( id != NULL )
       id->resolve_symbol( SYM_STATE );
 
-   // see if we're in a state or function, and if we're inside of an if
-   bool      is_in_if    = false;
-   LLASTNode *node       = NULL;
+   // see if we're in a state or function, and if it's allowed
+   bool      state_allowed = false;
+   LLASTNode *node         = NULL;
 
    for ( node = get_parent(); node; node = node->get_parent() ) {
       switch (node->get_node_type()) {
          case NODE_STATEMENT:
-            if ( node->get_node_sub_type() == NODE_IF_STATEMENT )
-               is_in_if = true;
+            switch (node->get_node_sub_type()) {
+               case NODE_DO_STATEMENT:
+               case NODE_FOR_STATEMENT:
+               case NODE_WHILE_STATEMENT:
+                  state_allowed = true;
+                  break;
+               case NODE_IF_STATEMENT:
+                  if (node->get_child(2) == NULL || node->get_child(2)->get_node_type() == NODE_NULL) {
+                     state_allowed = true;
+                  }
+                  break;
+               default:
+                  break;
+            }
             break;
          case NODE_STATE:
             // we're in a state, see if it's the same one we're calling
@@ -642,16 +654,20 @@ void LLScriptStateStatement::determine_type() {
             }
             return;
          case NODE_GLOBAL_FUNCTION:
-            if ( is_in_if ) {
-               // see what kind of function it is
-               switch (node->get_child(0)->get_type()->get_itype()) {
-                  case LST_LIST:
-                  case LST_STRING:
-                     ERROR( HERE, W_CHANGE_STATE_HACK_CORRUPT );
-                     break;
-                  default:
-                     ERROR( HERE, W_CHANGE_STATE_HACK );
-                     break;
+            if ( state_allowed ) {
+               if ( mono_mode ) {
+                  ERROR( HERE, W_CHANGE_STATE_HACK );
+               } else {
+                  // see what kind of function it is
+                  switch (node->get_child(0)->get_type()->get_itype()) {
+                     case LST_LIST:
+                     case LST_STRING:
+                        ERROR( HERE, W_CHANGE_STATE_HACK_CORRUPT );
+                        break;
+                     default:
+                        ERROR( HERE, W_CHANGE_STATE_HACK );
+                        break;
+                  }
                }
             } else {
                ERROR( HERE, E_CHANGE_STATE_IN_FUNCTION );

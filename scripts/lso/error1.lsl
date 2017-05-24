@@ -8,6 +8,12 @@ string unused()  {                  // unused, not all code paths return values 
         state default;              // warning: hack that corrupts stack        $[E20004]
         return;                     // error: returning nothing in int function $[E10018]
     }
+    if (1 == 1) {                   // always true                              $[E20011]
+        state default;              // error: can't change state in function    $[E10014]
+    } else ;
+    while (1) {
+        state default;              // warning: hack that corrupts stack        $[E20004]
+    }
 }
 
 string test(integer a, vector v) {  // param a is never used                    $[E20009]
