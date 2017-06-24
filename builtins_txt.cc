@@ -629,6 +629,7 @@ char *builtins_txt[] = {
 "const integer HTTP_METHOD = 0",
 "const integer HTTP_MIMETYPE = 1",
 "const integer HTTP_PRAGMA_NO_CACHE = 6",
+"const integer HTTP_USER_AGENT = 7",
 "const integer HTTP_VERBOSE_THROTTLE = 4",
 "const integer HTTP_VERIFY_CERT = 3",
 "const integer INVENTORY_ALL = -1",
