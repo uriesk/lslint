@@ -47,7 +47,7 @@ link = link.exe
 ##############################################################
 !ENDIF
 
-VERSION_NUMBER = 0.4.3-xh
+VERSION_NUMBER = 1.0.5
 BUILD_DATE = %DATE:~-10,4%-%DATE:~-5,2%-%DATE:~-2,2%
 
 !IFDEF NODEBUG

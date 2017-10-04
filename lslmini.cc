@@ -858,7 +858,7 @@ void version() {
    fprintf(stderr, "    ,dNWX0xolodddd:.','''..:OXWWX::\n");
    fprintf(stderr, "   ::WMMMMMMMMMMMN;.,'.....':xkxx:,       =] W-Hat KReW PreZentZ [=\n");
    fprintf(stderr, "   :,0WMMMMMMMMMMN;','...',,'...'..\n");
-   fprintf(stderr, "    .cNMMMMMMMMMMMK:,,;;.',,'...,,',            lslint v %s\n", VERSION);
+   fprintf(stderr, "    .cNMMMMMMMMMMMK:,,;;.',,'...,,',            lslint v%s\n", VERSION);
    fprintf(stderr, "   ,dWMMMMMMMMMMMMMMWWWMKdl,...''..\n");
    fprintf(stderr, "  ,lWMMMMMMMMMMMMMMMMMMMMMMNo,'':o                 CODiNG::\n");
    fprintf(stderr, "  .OMMMMMMMMMMMMMMMMMMMMMMMMMNXNMMx.                              ~masa~\n");
