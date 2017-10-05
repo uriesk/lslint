@@ -1,5 +1,5 @@
 language: cpp
 compiler: clang
-script: make
+script: make && sh test.sh
 git:
   depth: 1
