@@ -178,7 +178,16 @@ char *parse_string(char *input) {
 						break;
 					case '\\': *sp++ = '\\'; break;
 					case '"':  *sp++ = '"';  break;
-					default:   *sp++ = '\\'; *sp++ = *yp; break;
+					case '\n':
+						/* thorny! OK if preprocessor in use;
+                                                   causes a syntax disaster if not */
+						/* TODO: Emit warning, but how? */
+						*sp++ = '\n';
+						break;
+					default:
+						/* TODO: Emit warning, but how? */
+						*sp++ = *yp;
+						break;
 			}
 			yp++;
 		} else {
