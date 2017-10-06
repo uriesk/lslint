@@ -841,7 +841,9 @@ void usage(char *name) {
 #ifdef COMPILE_ENABLED
    printf("\t-c\t\tFlag: Compile (default off)\n");
 #endif /* COMPILE_ENABLED */
-   printf("\t-V\t\tPrint version and exit.\n");
+   printf("\t-V\t\tPrint long version info and exit.\n");
+   printf("\t--version\tPrint short version info and exit.\n");
+   printf("\t--help\t\tPrint this help text and exit.\n");
    printf("\n");
    printf("Options that are flags can have a - sign at the end to disable them\n");
    printf("(e.g. -m- to disable Mono and enable LSO)\n");
@@ -887,6 +889,10 @@ void version() {
    fprintf(stderr, "VS 2015  by: Xenhat    @ https://github.com/Ociidii-Works/lslint\n");
 }
 
+void short_version() {
+   fprintf(stderr, "lslint %s\n", VERSION);
+}
+
 int yylex_init( void ** );
 void yyset_in( FILE *, void *);
 int yylex_destroy( void *) ;
@@ -902,6 +908,21 @@ int main(int argc, char **argv) {
 #ifdef COMPILE_ENABLED
    bool compile   = true;
 #endif
+
+   // HACK: Parse long options before anything else.
+   for ( i = 1; i < argc; ++i ) {
+      if (argv[i][0] == '-' && argv[i][1] == '-') {
+         char *optiontext = argv[i] + 2;
+         if ( !strcmp(optiontext, "version") ) {
+            short_version();
+            return 0;
+         }
+         if ( !strcmp(optiontext, "help") ) {
+            usage(argv[0]);
+            return 0;
+         }
+      }
+   }
 
    for ( i = 1; i < argc; ++i ) {
       if ( argv[i][0] == '-' ) {
@@ -966,7 +987,7 @@ int main(int argc, char **argv) {
                   } else compile = true;
                   break;
 #endif /* COMPILE_ENABLED */
-               default: usage(argv[0]); exit(1);
+               default: usage(argv[0]); return 1;
             }
          }
       } else {
