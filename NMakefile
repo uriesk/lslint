@@ -1,3 +1,6 @@
+VERSION_NUMBER = 1.0.6
+BUILD_DATE = %DATE:~-10,4%-%DATE:~-5,2%-%DATE:~-2,2%
+
 #
 # 1. Download "Win flex-bison" and unpack it
 #    http://sourceforge.net/projects/winflexbison/
@@ -46,9 +49,6 @@ cc = cl.exe
 link = link.exe
 ##############################################################
 !ENDIF
-
-VERSION_NUMBER = 1.0.5
-BUILD_DATE = %DATE:~-10,4%-%DATE:~-5,2%-%DATE:~-2,2%
 
 !IFDEF NODEBUG
 VERSION = $(VERSION_NUMBER)
