@@ -890,7 +890,7 @@ void version() {
 }
 
 void short_version() {
-   fprintf(stderr, "lslint %s\n", VERSION);
+   fprintf(stderr, "lslint v%s\n", VERSION);
 }
 
 int yylex_init( void ** );
