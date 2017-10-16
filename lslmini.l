@@ -44,7 +44,7 @@ FS			(f|F)
 	LLOC_STEP();
 %}
 "//"                { BEGIN COMMENT; }
-<COMMENT>"$[E"{N}{5}"]" {
+<COMMENT,C_COMMENT>"$[E"{N}{5}"]" {
 		ErrorCode e = (ErrorCode) strtoul( yytext+3, NULL, 10 );
 		LOG( LOG_INFO, yylloc, "Adding assertion for E%d.", (int)e );
 		Logger::get()->add_assertion( yylloc->first_line, e );
