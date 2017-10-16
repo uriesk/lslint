@@ -833,6 +833,7 @@ void usage(char *name) {
    printf("\t-S\t\tDon't sort log messages\n");
    printf("\t-#\t\tShow error codes (for debugging/testing)\n");
    printf("\t-A\t\tCheck error assertions (for debugging/testing)\n");
+   printf("\t-a\t\tFlag: Don't report marked warnings/errors (default on)\n");
    printf("\t-i\t\tFlag: Ignore preprocessor directives (default off)\n");
    printf("\t-u\t\tFlag: Warn about unused event parameters (default off)\n");
    printf("\t-w\t\tFlag: Enable switch statements (default off)\n");
@@ -905,6 +906,8 @@ int main(int argc, char **argv) {
    void *scanner;
    Logger *logger = Logger::get();
 
+   logger->set_check_assertions(EXPECTED_ASSERTIONS);
+
 #ifdef COMPILE_ENABLED
    bool compile   = true;
 #endif
@@ -940,7 +943,13 @@ int main(int argc, char **argv) {
                case 'v': logger->set_show_info(true); break;
                case 'S': logger->set_sort(false);     break;
                case '#': logger->set_show_error_codes(true); break;
-               case 'A': logger->set_check_assertions(true); break;
+               case 'A': logger->set_check_assertions(ALL_ASSERTIONS); break;
+               case 'a':
+                  if (argv[i][j+1] == '-') {
+                     logger->set_check_assertions(NO_ASSERTIONS);
+                     j++;
+                  } else logger->set_check_assertions(EXPECTED_ASSERTIONS);
+                  break;
                case 'p': print_path = true; break;
                case 'V': version(); return 0;
                case 'i':
