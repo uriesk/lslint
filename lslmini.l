@@ -162,6 +162,7 @@ L?\"(\\.|[^\\"])*\"	{
 
 
 \n					{ LLOC_LINES(1); LLOC_STEP(); }
+[\x80-\xBF]			{ yylloc->last_column--; }
 .					{ LLOC_STEP(); /* ignore bad characters */ }
 
 %%
