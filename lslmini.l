@@ -20,7 +20,7 @@
 #define YY_USER_ACTION  yylloc->last_column += yyleng;
 #define YY_USER_INIT    LLOC_RESET()
 
-char *parse_string(char *input);
+char *parse_string(char *input, int *last_line, int *last_column);
 
 %}
 
@@ -44,7 +44,7 @@ FS			(f|F)
 	LLOC_STEP();
 %}
 "//"                { BEGIN COMMENT; }
-<COMMENT>"$[E"{N}{5}"]" {
+<COMMENT,C_COMMENT>"$[E"{N}{5}"]" {
 		ErrorCode e = (ErrorCode) strtoul( yytext+3, NULL, 10 );
 		LOG( LOG_INFO, yylloc, "Adding assertion for E%d.", (int)e );
 		Logger::get()->add_assertion( yylloc->first_line, e );
@@ -110,7 +110,11 @@ L?\"(\\.|[^\\"])*\"	{
 		if (yytext[0] == 'L') {
 			ERROR( yylloc, W_L_STRING );
 		}
-		yylval->sval = parse_string(yytext);
+		int last_line = yylloc->last_line;
+		int last_column = yylloc->last_column;
+		yylval->sval = parse_string(yytext, &last_line, &last_column);
+		yylloc->last_line = last_line;
+		yylloc->last_column = last_column;
 		return(STRING_CONSTANT);
 	}
 "++"				{ return(INC_OP); }
@@ -162,7 +166,7 @@ L?\"(\\.|[^\\"])*\"	{
 
 %%
 
-char *parse_string(char *input) {
+char *parse_string(char *input, int *last_line, int *last_column) {
 	char *str = new char[(strlen(input) - 2) * 2 + 1];
 	char *yp  = input + 1;
 	char *sp  = str;
@@ -171,6 +175,7 @@ char *parse_string(char *input) {
 	}
 	while ( *yp ) {
 		if ( *yp == '\\' ) {
+			++*last_column;
 			switch ( *++yp ) { 
 					case 'n':  *sp++ = '\n'; break;
 					case 't':
@@ -192,8 +197,17 @@ char *parse_string(char *input) {
 						*sp++ = *yp;
 						break;
 			}
+			++*last_column;
 			yp++;
+		} else if ( *yp == '\n') {
+			++*last_line;
+			*last_column = 1;
+			*sp++ = *yp++;
 		} else {
+			if ( (unsigned char)*yp < 0x80 || (unsigned char)*yp >= 0xC0) {
+				// count only the first byte of UTF-8 sequences
+				++*last_column;
+			}
 			*sp++ = *yp++;
 		}
 	}
