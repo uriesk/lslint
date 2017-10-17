@@ -106,13 +106,13 @@ FS			(f|F)
 {N}*"."{N}+({E})?{FS}?		{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 {N}+"."{N}*({E})?{FS}?		{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 
-L\"(\\.|[^\\"])*\"	{
+L?\"(\\.|[^\\"])*\"	{
+		if (yytext[0] == 'L') {
+			ERROR( yylloc, W_L_STRING );
+		}
 		yylval->sval = parse_string(yytext);
-		ERROR( yylloc, W_L_STRING );
 		return(STRING_CONSTANT);
 	}
-\"(\\.|[^\\"])*\"	{ yylval->sval = parse_string(yytext); return(STRING_CONSTANT); }
-
 "++"				{ return(INC_OP); }
 "--"				{ return(DEC_OP); }
 "+="				{ return(ADD_ASSIGN); }
@@ -166,6 +166,9 @@ char *parse_string(char *input) {
 	char *str = new char[(strlen(input) - 2) * 2 + 1];
 	char *yp  = input + 1;
 	char *sp  = str;
+	if (*input == 'L') {
+		*sp++ = *yp++;
+	}
 	while ( *yp ) {
 		if ( *yp == '\\' ) {
 			switch ( *++yp ) { 
@@ -178,7 +181,16 @@ char *parse_string(char *input) {
 						break;
 					case '\\': *sp++ = '\\'; break;
 					case '"':  *sp++ = '"';  break;
-					default:   *sp++ = '\\'; *sp++ = *yp; break;
+					case '\n':
+						/* thorny! OK if preprocessor in use;
+                                                   causes a syntax disaster if not */
+						/* TODO: Emit warning, but how? */
+						*sp++ = '\n';
+						break;
+					default:
+						/* TODO: Emit warning, but how? */
+						*sp++ = *yp;
+						break;
 			}
 			yp++;
 		} else {
