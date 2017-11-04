@@ -215,7 +215,7 @@ class LLScriptStringConstant : public LLScriptConstant {
 
 class LLScriptListConstant : public LLScriptConstant {
   public:
-    LLScriptListConstant( class LLScriptSimpleAssignable *v ) : LLScriptConstant(), value(v) { type = TYPE(LST_LIST); }
+    LLScriptListConstant( class LLScriptSimpleAssignable *v ) : LLScriptConstant(), value(v) { push_child(v); type = TYPE(LST_LIST); }
 
     virtual char *get_node_name() {
       static char buf[256];
