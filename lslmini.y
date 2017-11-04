@@ -28,7 +28,7 @@
 		 (Current).last_column  = (Rhs)[N].last_column,		\
 		 LLASTNode::set_glloc(&(Current)))
 
-	enum simple_recurse_mode { SIMPLE_ANY, SIMPLE_LIST, SIMPLE_VEC_ROT };
+	enum simple_recurse_mode { SIMPLE_ANY, SIMPLE_LIST };
 	static LLScriptSimpleAssignable *getSimpleAssignable(LLScriptExpression *expression, simple_recurse_mode mode = SIMPLE_ANY);
 
 %}
@@ -1119,11 +1119,11 @@ static LLScriptSimpleAssignable *getSimpleAssignable(LLScriptExpression *express
 
       // Handle vector/quaternion
 
-      LLScriptSimpleAssignable *x = getSimpleAssignable((LLScriptExpression *)node->get_child(0), SIMPLE_VEC_ROT);
-      LLScriptSimpleAssignable *y = getSimpleAssignable((LLScriptExpression *)node->get_child(1), SIMPLE_VEC_ROT);
-      LLScriptSimpleAssignable *z = getSimpleAssignable((LLScriptExpression *)node->get_child(2), SIMPLE_VEC_ROT);
+      LLScriptSimpleAssignable *x = getSimpleAssignable((LLScriptExpression *)node->get_child(0), SIMPLE_ANY);
+      LLScriptSimpleAssignable *y = getSimpleAssignable((LLScriptExpression *)node->get_child(1), SIMPLE_ANY);
+      LLScriptSimpleAssignable *z = getSimpleAssignable((LLScriptExpression *)node->get_child(2), SIMPLE_ANY);
       if (subtype == NODE_QUATERNION_EXPRESSION) {
-         LLScriptSimpleAssignable *s = getSimpleAssignable((LLScriptExpression *)node->get_child(3), SIMPLE_VEC_ROT);
+         LLScriptSimpleAssignable *s = getSimpleAssignable((LLScriptExpression *)node->get_child(3), SIMPLE_ANY);
          if (x && y && z && s)
            constant = new LLScriptQuaternionConstant(x, y, z, s);
       } else {
