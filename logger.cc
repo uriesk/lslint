@@ -40,9 +40,9 @@ void Logger::error(YYLTYPE *yylloc, ErrorCode error, ...) {
       fmt = warning_messages[ (int)(error - W_WARNING) ];
    }
 
-   if ( check_assertions ) {
-      // if we're checking assertions, messages will be removed by matching assertions,
-      // so we just add "Unexpected" to all of them.
+   if ( check_assertions == ALL_ASSERTIONS ) {
+      // if we're checking all assertions, messages will be removed by matching
+      // assertions, so we just add "Unexpected" to all of them.
       bp += sprintf(bp, level == LOG_ERROR ? "Unexpected error: " : "Unexpected warning: ");
 
       // upgrade everything to error
@@ -172,18 +172,22 @@ struct LogMessageSort {
 
 void Logger::report() {
    std::vector<LogMessage*>::iterator i;
-   if ( check_assertions ) {
+   if ( check_assertions != NO_ASSERTIONS ) {
       std::vector< std::pair<int, ErrorCode>* >::iterator ai;
       for ( ai = assertions.begin(); ai != assertions.end(); ++ai ) {
          for ( i = messages.begin(); i != messages.end(); ++i ) {
             if ( (*ai)->first == (*i)->get_loc()->first_line && (*ai)->second == (*i)->get_error() ) {
-               --errors; // when check assertions, warnings are treated as errors.
+               // when ALL_ASSERTIONS, warnings are treated as errors.
+               if ( check_assertions == ALL_ASSERTIONS || ((*ai)->second >= E_ERROR && (*ai)->second <= E_LAST) )
+                   --errors;
+               else
+                   --warnings;
                messages.erase(i);
                i = messages.end() + 1; // HACK?: ensure that i isn't messages.end()
                break;
             }
          }
-         if ( i == messages.end() )
+         if ( check_assertions == ALL_ASSERTIONS && i == messages.end() )
             LOG( LOG_ERROR, NULL, "Assertion failed: error %d on line %d.", (*ai)->second, (*ai)->first );
       }
    }

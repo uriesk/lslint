@@ -114,6 +114,12 @@ enum ErrorCode {
 
 };
 
+enum AssertType {
+    NO_ASSERTIONS,
+    EXPECTED_ASSERTIONS,
+    ALL_ASSERTIONS
+};
+
 #define LOG         Logger::get()->log
 #define LOGV        Logger::get()->logv
 #define IN(v)       (v)->get_lloc()
@@ -159,7 +165,7 @@ class Logger {
     void    set_show_info(bool v){ show_info = v;}
     void    set_sort(bool v)     { sort = v;     }
     void    set_show_error_codes(bool v) { show_error_codes = v; }
-    void    set_check_assertions(bool v) { check_assertions = v; }
+    void    set_check_assertions(AssertType v) { check_assertions = v; }
     void    set_file_path(const char *v) { file_path = v; }
 
     void    add_assertion( int line, ErrorCode error ) {
@@ -167,14 +173,14 @@ class Logger {
     }
 
   protected:
-    Logger() : errors(0), warnings(0), show_end(false), show_info(false), sort(true), show_error_codes(false), check_assertions(false), file_path(NULL), last_message(NULL), file(stderr) {};
+    Logger() : errors(0), warnings(0), show_end(false), show_info(false), sort(true), show_error_codes(false), check_assertions(NO_ASSERTIONS), file_path(NULL), last_message(NULL), file(stderr) {};
     int     errors;
     int     warnings;
     bool    show_end;
     bool    show_info;
     bool    sort;
     bool    show_error_codes;
-    bool    check_assertions;
+    AssertType check_assertions;
     const char *file_path;
     class LogMessage *last_message;
 

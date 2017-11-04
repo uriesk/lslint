@@ -20,7 +20,7 @@
 #define YY_USER_ACTION  yylloc->last_column += yyleng;
 #define YY_USER_INIT    LLOC_RESET()
 
-char *parse_string(char *input);
+char *parse_string(char *input, int *last_line, int *last_column);
 
 %}
 
@@ -44,7 +44,7 @@ FS			(f|F)
 	LLOC_STEP();
 %}
 "//"                { BEGIN COMMENT; }
-<COMMENT>"$[E"{N}{5}"]" {
+<COMMENT,C_COMMENT>"$[E"{N}{5}"]" {
 		ErrorCode e = (ErrorCode) strtoul( yytext+3, NULL, 10 );
 		LOG( LOG_INFO, yylloc, "Adding assertion for E%d.", (int)e );
 		Logger::get()->add_assertion( yylloc->first_line, e );
@@ -106,13 +106,17 @@ FS			(f|F)
 {N}*"."{N}+({E})?{FS}?		{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 {N}+"."{N}*({E})?{FS}?		{ yylval->fval = (F32)atof(yytext); return(FP_CONSTANT); }
 
-L\"(\\.|[^\\"])*\"	{
-		yylval->sval = parse_string(yytext);
-		ERROR( yylloc, W_L_STRING );
+L?\"(\\.|[^\\"])*\"	{
+		if (yytext[0] == 'L') {
+			ERROR( yylloc, W_L_STRING );
+		}
+		int last_line = yylloc->last_line;
+		int last_column = yylloc->last_column;
+		yylval->sval = parse_string(yytext, &last_line, &last_column);
+		yylloc->last_line = last_line;
+		yylloc->last_column = last_column;
 		return(STRING_CONSTANT);
 	}
-\"(\\.|[^\\"])*\"	{ yylval->sval = parse_string(yytext); return(STRING_CONSTANT); }
-
 "++"				{ return(INC_OP); }
 "--"				{ return(DEC_OP); }
 "+="				{ return(ADD_ASSIGN); }
@@ -158,16 +162,21 @@ L\"(\\.|[^\\"])*\"	{
 
 
 \n					{ LLOC_LINES(1); LLOC_STEP(); }
+[\x80-\xBF]			{ yylloc->last_column--; }
 .					{ LLOC_STEP(); /* ignore bad characters */ }
 
 %%
 
-char *parse_string(char *input) {
+char *parse_string(char *input, int *last_line, int *last_column) {
 	char *str = new char[(strlen(input) - 2) * 2 + 1];
 	char *yp  = input + 1;
 	char *sp  = str;
+	if (*input == 'L') {
+		*sp++ = *yp++;
+	}
 	while ( *yp ) {
 		if ( *yp == '\\' ) {
+			++*last_column;
 			switch ( *++yp ) { 
 					case 'n':  *sp++ = '\n'; break;
 					case 't':
@@ -178,10 +187,28 @@ char *parse_string(char *input) {
 						break;
 					case '\\': *sp++ = '\\'; break;
 					case '"':  *sp++ = '"';  break;
-					default:   *sp++ = '\\'; *sp++ = *yp; break;
+					case '\n':
+						/* thorny! OK if preprocessor in use;
+                                                   causes a syntax disaster if not */
+						/* TODO: Emit warning, but how? */
+						*sp++ = '\n';
+						break;
+					default:
+						/* TODO: Emit warning, but how? */
+						*sp++ = *yp;
+						break;
 			}
+			++*last_column;
 			yp++;
+		} else if ( *yp == '\n') {
+			++*last_line;
+			*last_column = 1;
+			*sp++ = *yp++;
 		} else {
+			if ( (unsigned char)*yp < 0x80 || (unsigned char)*yp >= 0xC0) {
+				// count only the first byte of UTF-8 sequences
+				++*last_column;
+			}
 			*sp++ = *yp++;
 		}
 	}

@@ -35,6 +35,9 @@ default {
                        1E+2f // $[E10019]
                             ;
 
+      if (/* $[E20011] true $[E20019] prepends quote */ L"a
+\b" == "\"a\nb") 0;
+
       if (0) 0;                   // $[E20012] false
       if (0.0) 0;                 // $[E20012] false
       if (<0.0,0.0,0.0>) 0;       // $[E20012] false
