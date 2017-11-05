@@ -77,7 +77,7 @@ float bad_f04 = -good_f01;   // $[E10020]
 float bad_f05 = good_v01.z;  // $[E10020]
 string bad_s01 = - "what?";  // $[E10020]
 vector bad_v01 = -<1,2,3>;   // $[E10020]
-vector bad_v02 = <1,2,[]>;   // $[E10020]
+vector bad_v02 = <1,2,[]>;   // $[E10016]
 vector bad_r01 = -r00;       // $[E10020]
 vector bad_r02 = <good_r01.x, good_r01.y, good_r01.z, good_r01.s>; // $[E10020]
 list bad_l01 = [-TRUE];      // $[E10020]
@@ -85,6 +85,12 @@ list bad_l02 = [-<1,1,1>];   // $[E10020]
 list bad_l03 = [1,[2,3],4];  // $[E10020] TODO: add "Lists can't contain lists"
 list bad_l04 = -[1];         // $[E10020] (dubious - E10002 would be more appropriate here)
 list bad_l05 = [good_v01.x]; // $[E10020]
+
+// Regression - global used in list:
+integer I_am_used = PRIM_LINK_TARGET;
+list I_am_also_used = [I_am_used,
+ I_am_undeclared // $[E10006]
+];
 
 default{timer(){
 
@@ -152,5 +158,8 @@ good_k05; good_k06;
 good_v00; good_v01; good_v02; good_v03;
 
 good_l00; good_l01; good_l02;
+
+bad_v02;
+llSetPrimitiveParams(I_am_also_used);
 
 }}

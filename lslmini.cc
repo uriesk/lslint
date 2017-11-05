@@ -751,7 +751,31 @@ void LLScriptVectorExpression::determine_type() {
    }
 }
 
+void LLScriptVectorConstant::determine_type() {
+   type = TYPE(LST_VECTOR);
+   LLASTNode *node = get_children();
+   for ( ; node ; node = node->get_next() ) {
+      if ( !node->get_type()->can_coerce(TYPE(LST_FLOATINGPOINT)) ) {
+         ERROR( HERE, E_WRONG_TYPE_IN_MEMBER_ASSIGNMENT, "vector",
+               node->get_type()->get_node_name() );
+         return;
+      }
+   }
+}
+
 void LLScriptQuaternionExpression::determine_type() {
+   type = TYPE(LST_QUATERNION);
+   LLASTNode *node = get_children();
+   for ( ; node ; node = node->get_next() ) {
+      if ( !node->get_type()->can_coerce(TYPE(LST_FLOATINGPOINT)) ) {
+         ERROR( HERE, E_WRONG_TYPE_IN_MEMBER_ASSIGNMENT, "quaternion",
+               node->get_type()->get_node_name() );
+         return;
+      }
+   }
+}
+
+void LLScriptQuaternionConstant::determine_type() {
    type = TYPE(LST_QUATERNION);
    LLASTNode *node = get_children();
    for ( ; node ; node = node->get_next() ) {

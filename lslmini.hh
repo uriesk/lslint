@@ -72,7 +72,7 @@ class LLScriptScript : public LLASTNode {
 
 class LLScriptGlobalStorage : public LLASTNode {
   public:
-    LLScriptGlobalStorage( class LLScriptGlobalVariable *variables, class LLScriptGlobalFunction *functions ) 
+    LLScriptGlobalStorage( class LLScriptGlobalVariable *variables, class LLScriptGlobalFunction *functions )
       : LLASTNode( 2, variables, functions ) {};
     virtual char *get_node_name() { return "global storage"; }
     virtual LLNodeType get_node_type() { return NODE_GLOBAL_STORAGE; };
@@ -215,7 +215,7 @@ class LLScriptStringConstant : public LLScriptConstant {
 
 class LLScriptListConstant : public LLScriptConstant {
   public:
-    LLScriptListConstant( class LLScriptSimpleAssignable *v ) : LLScriptConstant(), value(v) { type = TYPE(LST_LIST); }
+    LLScriptListConstant( class LLScriptSimpleAssignable *v ) : LLScriptConstant(), value(v) { push_child(v); type = TYPE(LST_LIST); }
 
     virtual char *get_node_name() {
       static char buf[256];
@@ -262,6 +262,7 @@ class LLScriptVectorConstant : public LLScriptConstant {
       return buf;
     }
 
+    virtual void determine_type();
     virtual void determine_value();
     virtual LLNodeSubType get_node_sub_type() { return NODE_VECTOR_CONSTANT; }
 
@@ -301,6 +302,7 @@ class LLScriptQuaternionConstant : public LLScriptConstant {
 
     virtual LLScriptConstant *operation(int op, LLScriptConstant *other_const, YYLTYPE *lloc);
 
+    virtual void determine_type();
     virtual void determine_value();
 
   private:
@@ -498,7 +500,7 @@ class LLScriptDeclaration : public LLScriptStatement {
     virtual void define_symbols();
     virtual void determine_type();
     virtual void determine_value();
-    virtual char *get_node_name() { return "declaration"; }; 
+    virtual char *get_node_name() { return "declaration"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_DECLARATION; };
 };
 
@@ -525,7 +527,7 @@ class LLScriptExpression : public LLASTNode {
       static char buf[256];
       sprintf( buf, isprint(operation) ? "expression: '%c'" : "expression: =%d", operation );
       return buf;
-    }; 
+    };
     virtual LLNodeType get_node_type() { return NODE_EXPRESSION; };
     int get_operation() { return operation; };
   private:
@@ -572,7 +574,7 @@ class LLScriptVectorExpression : public LLScriptExpression {
 
 class LLScriptQuaternionExpression : public LLScriptExpression {
   public:
-    LLScriptQuaternionExpression( LLScriptExpression *v1, LLScriptExpression *v2, LLScriptExpression *v3, LLScriptExpression *v4 ) 
+    LLScriptQuaternionExpression( LLScriptExpression *v1, LLScriptExpression *v2, LLScriptExpression *v3, LLScriptExpression *v4 )
       : LLScriptExpression(4, v1, v2, v3, v4) { type = TYPE(LST_QUATERNION); };
     LLScriptQuaternionExpression( ) : LLScriptExpression(0) {
       constant_value = new LLScriptQuaternionConstant(0.0f, 0.0f, 0.0f, 0.0f);
