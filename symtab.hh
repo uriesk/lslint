@@ -15,7 +15,9 @@ class LLScriptSymbol {
 
     LLScriptSymbol( char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, class LLScriptFunctionDec *function_decl = NULL )
       : name(name), type(type), symbol_type(symbol_type), sub_type(sub_type), function_decl(function_decl),
-      constant_value(NULL), references(0), assignments(0), cur_references(0) {};
+      constant_value(NULL), references(0), assignments(0), cur_references(0) {
+          lloc = {0,0,0,0};
+    };
 
 
     char                *get_name()         { return name; }
