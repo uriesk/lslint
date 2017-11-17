@@ -155,7 +155,7 @@ void LLScriptEventHandler::final_pre_checks() {
       while ( declared_param_id != NULL && passed_param_id != NULL ) {
          if ( !passed_param_id->get_type()->can_coerce(
                   declared_param_id->get_type()) ) {
-            ERROR( HERE, E_ARGUMENT_WRONG_TYPE_EVENT,
+            ERROR( IN(passed_param_id), E_ARGUMENT_WRONG_TYPE_EVENT,
                   passed_param_id->get_type()->get_node_name(),
                   param_num,
                   id->get_name(),
@@ -171,7 +171,7 @@ void LLScriptEventHandler::final_pre_checks() {
 
       if ( passed_param_id != NULL ) {
          // printf("too many, extra is %s\n", passed_param_id->get_name());
-         ERROR( HERE, E_TOO_MANY_ARGUMENTS_EVENT, id->get_name() );
+         ERROR( IN(passed_param_id), E_TOO_MANY_ARGUMENTS_EVENT, id->get_name() );
       } else if ( declared_param_id != NULL ) {
          // printf("too few, extra is %s\n", declared_param_id->get_name());
          ERROR( HERE, E_TOO_FEW_ARGUMENTS_EVENT, id->get_name() );
