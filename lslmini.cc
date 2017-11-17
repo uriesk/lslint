@@ -1064,7 +1064,9 @@ nextarg:
          dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "inputlist"));
          dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_INTEGER), "index"));
          dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "value"));
-         script->define_symbol(new LLScriptSymbol(name, LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec));
+         LLScriptSymbol *sym = new LLScriptSymbol(name, LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec);
+         script->define_symbol(sym);
+         sym->add_reference();
       }
 
       LOG(LOG_INFO, NULL, "Script parsed, collecting symbols");
