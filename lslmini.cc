@@ -160,7 +160,11 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
       shadow = symbol_table->lookup( symbol->get_name() );
 
       // Override?
-      if ( override_fn && shadow && shadow->get_symbol_type() == SYM_FUNCTION && shadow->get_sub_type() != SYM_BUILTIN ) {
+      if ( shadow  // warning: testing shadow first is important
+           && (override_fn
+               || (lazy_lists && !strcmp(shadow->get_name(), "lazy_list_set")))
+           && shadow->get_symbol_type() == SYM_FUNCTION
+           && shadow->get_sub_type() != SYM_BUILTIN ) {
          script->get_symbol_table()->remove(shadow);
          delete shadow;
          shadow = NULL;
@@ -1064,7 +1068,9 @@ nextarg:
          dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "inputlist"));
          dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_INTEGER), "index"));
          dec->push_child(new LLScriptIdentifier(LLScriptType::get(LST_LIST), "value"));
-         script->define_symbol(new LLScriptSymbol(name, LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec));
+         LLScriptSymbol *sym = new LLScriptSymbol(name, LLScriptType::get(LST_LIST), SYM_FUNCTION, SYM_GLOBAL, dec);
+         script->define_symbol(sym);
+         sym->add_reference();
       }
 
       LOG(LOG_INFO, NULL, "Script parsed, collecting symbols");
