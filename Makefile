@@ -1,5 +1,5 @@
 PROGRAM = lslint
-VERSION_NUMBER = 1.0.7
+VERSION_NUMBER = 1.0.8
 BUILD_DATE = $(shell date +"%Y-%m-%d")
 
 # See if we're running on windows
