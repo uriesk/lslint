@@ -38,7 +38,7 @@ endif
 
 ifndef WINDOWS
 OPTIMIZE ?= 
-CXX = g++ -g -Wall -Wno-write-strings -Wno-non-virtual-dtor -fno-omit-frame-pointer -ffloat-store -Wno-unused-private-field -Wno-unneeded-internal-declaration
+CXX = g++ -g -Wall -pedantic -fno-omit-frame-pointer -ffloat-store
 CXXOUTPUT = -o
 ifndef MAC
 LD = g++ -g -static
@@ -99,7 +99,7 @@ builtins_txt.cc: builtins.txt
 	echo "#ifdef _MSC_VER" > builtins_txt.cc
 	echo "#pragma execution_character_set(\"utf-8\")" >> builtins_txt.cc
 	echo "#endif" >> builtins_txt.cc
-	echo "char *builtins_txt[] = {" >> builtins_txt.cc
+	echo "const char *builtins_txt[] = {" >> builtins_txt.cc
 	sed -e '/^\/\//d; s/"/\\\"/g; s/^/"/; s/$$/",/' \
 		builtins.txt >> builtins_txt.cc || \
 			{ rm -f builtins_txt.cc ; false ; }

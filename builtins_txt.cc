@@ -1,7 +1,7 @@
 #ifdef _MSC_VER
 #pragma execution_character_set("utf-8")
 #endif
-char *builtins_txt[] = {
+const char *builtins_txt[] = {
 "integer llAbs( integer val )",
 "float llAcos( float val )",
 "void llAddToLandBanList( key avatar, float hours )",

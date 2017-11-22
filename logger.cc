@@ -94,7 +94,7 @@ void Logger::error(YYLTYPE *yylloc, ErrorCode error, ...) {
 
 
 void Logger::logv(LogLevel level, YYLTYPE *yylloc, const char *fmt, va_list args, ErrorCode error) {
-   char          *type           = NULL;
+   const char    *type           = NULL;
    static char    buf[1024];
    char          *bp             = buf;
    switch (level) {
