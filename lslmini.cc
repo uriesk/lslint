@@ -609,7 +609,7 @@ void LLScriptFunctionExpression::determine_type() {
    while ( declared_param_id != NULL && passed_param_id != NULL ) {
       if ( !passed_param_id->get_type()->can_coerce(
                declared_param_id->get_type()) ) {
-         ERROR( HERE, E_ARGUMENT_WRONG_TYPE,
+         ERROR( IN(passed_param_id), E_ARGUMENT_WRONG_TYPE,
                passed_param_id->get_type()->get_node_name(),
                param_num,
                id->get_name(),
@@ -624,7 +624,7 @@ void LLScriptFunctionExpression::determine_type() {
    }
 
    if ( passed_param_id != NULL ) {
-      ERROR( HERE, E_TOO_MANY_ARGUMENTS, id->get_name() );
+      ERROR( IN(passed_param_id), E_TOO_MANY_ARGUMENTS, id->get_name() );
    } else if ( declared_param_id != NULL ) {
       ERROR( HERE, E_TOO_FEW_ARGUMENTS, id->get_name() );
    }
