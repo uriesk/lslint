@@ -250,6 +250,10 @@ globals
 			$$ = $2;
 		}
 	}
+	| error ';'
+	{
+		$$ = NULL;
+	}
 	;
 
 global
