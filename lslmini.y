@@ -667,6 +667,10 @@ declaration
 		DEBUG( LOG_DEBUG_SPAM, NULL, "= %s\n", $4->get_node_name());
 		$$ = new LLScriptDeclaration(new LLScriptIdentifier($1, $2, &@2), $4);
 	}
+	| typename IDENTIFIER '=' error
+	{
+		$$ = new LLScriptDeclaration(new LLScriptIdentifier($1, $2, &@2), NULL);
+	}
 	;
 
 forexpressionlist
