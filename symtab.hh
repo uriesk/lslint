@@ -9,18 +9,18 @@ enum LLSymbolSubType    { SYM_LOCAL, SYM_GLOBAL, SYM_BUILTIN, SYM_FUNCTION_PARAM
 
 class LLScriptSymbol {
   public:
-    LLScriptSymbol( char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, YYLTYPE *lloc, class LLScriptFunctionDec *function_decl = NULL )
+    LLScriptSymbol( const char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, YYLTYPE *lloc, class LLScriptFunctionDec *function_decl = NULL )
       : name(name), type(type), symbol_type(symbol_type), sub_type(sub_type), lloc(*lloc), function_decl(function_decl),
       constant_value(NULL), references(0), assignments(0), cur_references(0) {};
 
-    LLScriptSymbol( char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, class LLScriptFunctionDec *function_decl = NULL )
+    LLScriptSymbol( const char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, class LLScriptFunctionDec *function_decl = NULL )
       : name(name), type(type), symbol_type(symbol_type), sub_type(sub_type), function_decl(function_decl),
       constant_value(NULL), references(0), assignments(0), cur_references(0) {
-          // lloc = {0,0,0,0}; // commenting out until linux 32 and osx build work fine
+          lloc = {0,0,0,0};
     };
 
 
-    char                *get_name()         { return name; }
+    const char          *get_name()         { return name; }
     class LLScriptType  *get_type()         { return type; }
 
     int                  get_references()   { return references; }
@@ -30,7 +30,7 @@ class LLScriptSymbol {
 
     LLSymbolType         get_symbol_type()  { return symbol_type; }
     LLSymbolSubType      get_sub_type()     { return sub_type;    }
-    static char         *get_type_name(LLSymbolType t)    {
+    static const char   *get_type_name(LLSymbolType t)    {
       switch (t) {
         case SYM_VARIABLE:  return "variable";
         case SYM_FUNCTION:  return "function";
@@ -49,7 +49,7 @@ class LLScriptSymbol {
     void                    set_constant_value(class LLScriptConstant *v)   { constant_value = v;       };
 
   private:
-    char                *name;
+    const char          *name;
     class LLScriptType  *type;
     LLSymbolType         symbol_type;
     LLSymbolSubType      sub_type;
@@ -63,7 +63,7 @@ class LLScriptSymbol {
 
 class LLScriptSymbolTable {
   public:
-    LLScriptSymbol *lookup( char *name, LLSymbolType type = SYM_ANY, bool is_case_sensitive = true );
+    LLScriptSymbol *lookup( const char *name, LLSymbolType type = SYM_ANY, bool is_case_sensitive = true );
     void            define( LLScriptSymbol *symbol );
     void            remove( LLScriptSymbol *symbol );
     void            check_symbols();

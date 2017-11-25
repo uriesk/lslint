@@ -61,7 +61,7 @@ class LLScriptScript : public LLASTNode {
     virtual void generate_cil();
 #endif /* COMPILE_ENABLED */
     void define_builtins();
-    virtual char *get_node_name() { return "script"; };
+    virtual const char *get_node_name() { return "script"; };
     virtual LLNodeType get_node_type() { return NODE_SCRIPT; };
     int get_switchlevel() { return switchlevel; }
     void inc_switchlevel() { switchlevel++; }
@@ -74,20 +74,20 @@ class LLScriptGlobalStorage : public LLASTNode {
   public:
     LLScriptGlobalStorage( class LLScriptGlobalVariable *variables, class LLScriptGlobalFunction *functions )
       : LLASTNode( 2, variables, functions ) {};
-    virtual char *get_node_name() { return "global storage"; }
+    virtual const char *get_node_name() { return "global storage"; }
     virtual LLNodeType get_node_type() { return NODE_GLOBAL_STORAGE; };
 };
 
 class LLScriptIdentifier : public LLASTNode {
   public:
-    LLScriptIdentifier( char *name ) : LLASTNode(0), symbol(NULL), name(name), member(NULL) {};
-    LLScriptIdentifier( char *name, char *member ) : LLASTNode(0), symbol(NULL), name(name), member(member) {};
-    LLScriptIdentifier( class LLScriptType *_type, char *name ) : LLASTNode(0), symbol(NULL), name(name), member(NULL) { type = _type; };
-    LLScriptIdentifier( class LLScriptType *_type, char *name, YYLTYPE *lloc ) : LLASTNode( lloc, 0), symbol(NULL), name(name), member(NULL) { type = _type; };
+    LLScriptIdentifier( const char *name ) : LLASTNode(0), symbol(NULL), name(name), member(NULL) {};
+    LLScriptIdentifier( const char *name, const char *member ) : LLASTNode(0), symbol(NULL), name(name), member(member) {};
+    LLScriptIdentifier( class LLScriptType *_type, const char *name ) : LLASTNode(0), symbol(NULL), name(name), member(NULL) { type = _type; };
+    LLScriptIdentifier( class LLScriptType *_type, const char *name, YYLTYPE *lloc ) : LLASTNode( lloc, 0), symbol(NULL), name(name), member(NULL) { type = _type; };
     LLScriptIdentifier( LLScriptIdentifier *other ) : LLASTNode(0), symbol(NULL), name(other->get_name()), member(other->get_member()) {};
 
-    char    *get_name() { return name; }
-    char    *get_member() { return member; }
+    const char *get_name() { return name; }
+    const char *get_member() { return member; }
 
     void determine_value();
 
@@ -95,16 +95,16 @@ class LLScriptIdentifier : public LLASTNode {
     void set_symbol( LLScriptSymbol *_symbol ) { symbol = _symbol; };
     LLScriptSymbol *get_symbol() { return symbol; };
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
       sprintf(buf, "identifier \"%s%s%s\"", name, member ? "." : "", member ? member : "" );
-      return buf;
+      return (const char *)buf;
     }
     virtual LLNodeType get_node_type() { return NODE_IDENTIFIER; };
   private:
     LLScriptSymbol                  *symbol;
-    char                            *name;
-    char                            *member;
+    const char                      *name;
+    const char                      *member;
 };
 
 class LLScriptGlobalVariable : public LLASTNode {
@@ -112,7 +112,7 @@ class LLScriptGlobalVariable : public LLASTNode {
     LLScriptGlobalVariable( class LLScriptIdentifier *identifier, class LLScriptSimpleAssignable *value )
       : LLASTNode(2, identifier, value) { DEBUG( LOG_DEBUG_SPAM, NULL, "made a global var\n"); };
     virtual void define_symbols();
-    virtual char *get_node_name() { return "global var"; }
+    virtual const char *get_node_name() { return "global var"; }
     virtual LLNodeType get_node_type() { return NODE_GLOBAL_VARIABLE; };
     virtual void determine_type();
     virtual void determine_value();
@@ -124,7 +124,7 @@ class LLScriptSimpleAssignable : public LLASTNode {
   public:
     LLScriptSimpleAssignable( class LLScriptConstant *constant ) : LLASTNode(1, constant) {};
     LLScriptSimpleAssignable( class LLScriptIdentifier *id ) : LLASTNode(1, id) {};
-    virtual char *get_node_name() { return "assignable"; }
+    virtual const char *get_node_name() { return "assignable"; }
     virtual void determine_type();
     virtual void determine_value();
     virtual LLNodeType get_node_type() { return NODE_SIMPLE_ASSIGNABLE; };
@@ -133,7 +133,7 @@ class LLScriptSimpleAssignable : public LLASTNode {
 class LLScriptConstant : public LLASTNode {
   public:
     LLScriptConstant() : LLASTNode(0) { constant_value = this; }
-    virtual char *get_node_name() { return "unknown constant"; }
+    virtual const char *get_node_name() { return "unknown constant"; }
     virtual LLNodeType get_node_type() { return NODE_CONSTANT; };
     virtual LLScriptConstant *operation(int op, LLScriptConstant *other_const, YYLTYPE *lloc) { return NULL; };
 };
@@ -146,10 +146,10 @@ class LLScriptIntegerConstant : public LLScriptConstant {
   public:
     LLScriptIntegerConstant( int v, int isbool = 0 ) : LLScriptConstant(), value(v), is_bool(isbool) { type = TYPE(LST_INTEGER); }
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
       sprintf(buf, "integer constant: %d", value);
-      return buf;
+      return (const char *)buf;
     }
 
     virtual LLNodeSubType get_node_sub_type() { return NODE_INTEGER_CONSTANT; }
@@ -171,10 +171,10 @@ class LLScriptFloatConstant : public LLScriptConstant {
   public:
     LLScriptFloatConstant( float v ) : LLScriptConstant(), value(v) { type = TYPE(LST_FLOATINGPOINT); }
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
       sprintf(buf, "float constant: %f", value);
-      return buf;
+      return (const char *)buf;
     }
 
     virtual LLNodeSubType get_node_sub_type() { return NODE_FLOAT_CONSTANT; }
@@ -192,21 +192,21 @@ class LLScriptFloatConstant : public LLScriptConstant {
 
 class LLScriptStringConstant : public LLScriptConstant {
   public:
-    LLScriptStringConstant( char *v ) : LLScriptConstant(), value(v) { type = TYPE(LST_STRING); }
+    LLScriptStringConstant( const char *v ) : LLScriptConstant(), value(v) { type = TYPE(LST_STRING); }
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
       sprintf(buf, "string constant: `%s'", value);
-      return buf;
+      return (const char *)buf;
     }
 
     virtual LLNodeSubType get_node_sub_type() { return NODE_STRING_CONSTANT; }
 
-    char *get_value() { return value; }
+    const char *get_value() { return value; }
     virtual LLScriptConstant *operation(int op, LLScriptConstant *other_const, YYLTYPE *lloc);
 
   private:
-    char *value;
+    const char *value;
 };
 
 
@@ -217,10 +217,10 @@ class LLScriptListConstant : public LLScriptConstant {
   public:
     LLScriptListConstant( class LLScriptSimpleAssignable *v ) : LLScriptConstant(), value(v) { push_child(v); type = TYPE(LST_LIST); }
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
-      sprintf(buf, "list constant: `%p'", value);
-      return buf;
+      sprintf(buf, "list constant: `%p'", (void *)value);
+      return (const char *)buf;
     }
 
     virtual LLNodeSubType get_node_sub_type() { return NODE_LIST_CONSTANT; }
@@ -253,13 +253,13 @@ class LLScriptVectorConstant : public LLScriptConstant {
       type = TYPE(LST_VECTOR);
     };
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
       if ( value )
         sprintf(buf, "vector constant: <%g, %g, %g>", value->x, value->y, value->z);
       else
         sprintf(buf, "vector constant: unknown value?" );
-      return buf;
+      return (const char *)buf;
     }
 
     virtual void determine_type();
@@ -287,13 +287,13 @@ class LLScriptQuaternionConstant : public LLScriptConstant {
       type = TYPE(LST_QUATERNION);
     };
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
       if (value)
         sprintf(buf, "quaternion constant: <%g, %g, %g, %g>", value->x, value->y, value->z, value->s);
       else
         sprintf(buf, "quaternion constant: unknown value?" );
-      return buf;
+      return (const char *)buf;
     }
 
     virtual LLNodeSubType get_node_sub_type() { return NODE_QUATERNION_CONSTANT; }
@@ -318,7 +318,7 @@ class LLScriptGlobalFunction : public LLASTNode {
         symbol_table = new LLScriptSymbolTable();
     };
     virtual void define_symbols();
-    virtual char *get_node_name() { return "global func"; }
+    virtual const char *get_node_name() { return "global func"; }
     virtual LLNodeType get_node_type() { return NODE_GLOBAL_FUNCTION; };
     virtual void final_pre_checks();
 };
@@ -328,7 +328,7 @@ class LLScriptFunctionDec : public LLASTNode {
     LLScriptFunctionDec() : LLASTNode(0) {};
     LLScriptFunctionDec( class LLScriptIdentifier *identifier ) : LLASTNode(1, identifier) {};
     virtual void define_symbols();
-    virtual char *get_node_name() { return "function decl"; }
+    virtual const char *get_node_name() { return "function decl"; }
     virtual LLNodeType get_node_type() { return NODE_FUNCTION_DEC; };
 };
 
@@ -337,7 +337,7 @@ class LLScriptEventDec : public LLASTNode {
     LLScriptEventDec() : LLASTNode(0) {};
     LLScriptEventDec( class LLScriptIdentifier *identifier ) : LLASTNode(1, identifier) {};
     virtual void define_symbols();
-    virtual char *get_node_name() { return "event decl"; }
+    virtual const char *get_node_name() { return "event decl"; }
     virtual LLNodeType get_node_type() { return NODE_EVENT_DEC; };
 };
 
@@ -346,7 +346,7 @@ class LLScriptState : public LLASTNode {
     LLScriptState( class LLScriptIdentifier *identifier, class LLScriptEventHandler *state_body )
       : LLASTNode( 2, identifier, state_body ) {};
     virtual void define_symbols();
-    virtual char *get_node_name() { return "state"; }
+    virtual const char *get_node_name() { return "state"; }
     virtual LLNodeType get_node_type() { return NODE_STATE; };
 };
 
@@ -356,7 +356,7 @@ class LLScriptEventHandler : public LLASTNode {
       : LLASTNode(3, identifier, decl, body) {
         symbol_table = new LLScriptSymbolTable();
     };
-    virtual char *get_node_name() { return "event handler"; }
+    virtual const char *get_node_name() { return "event handler"; }
     virtual LLNodeType get_node_type() { return NODE_EVENT_HANDLER; };
     virtual void final_pre_checks();
 };
@@ -371,7 +371,7 @@ class LLScriptEvent : public LLASTNode {
      };
 
     virtual void define_symbols();
-    virtual char *get_node_name() { return "event"; }
+    virtual const char *get_node_name() { return "event"; }
     virtual LLNodeType get_node_type() { return NODE_EVENT; };
 };
 
@@ -384,14 +384,14 @@ class LLScriptStatement : public LLASTNode {
       va_end(ap);
     };
     LLScriptStatement( class LLScriptExpression *expression ) : LLASTNode(1, expression) {};
-    virtual char *get_node_name() { return "statement"; }
+    virtual const char *get_node_name() { return "statement"; }
     virtual LLNodeType get_node_type() { return NODE_STATEMENT; };
 };
 
 class LLScriptCompoundStatement : public LLScriptStatement {
   public:
     LLScriptCompoundStatement( class LLScriptStatement *body ) : LLScriptStatement(1, body) { symbol_table = new LLScriptSymbolTable(); }
-    virtual char *get_node_name() { return "compound statement"; };
+    virtual const char *get_node_name() { return "compound statement"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_COMPOUND_STATEMENT; };
 };
 
@@ -400,7 +400,7 @@ class LLScriptStateStatement : public LLScriptStatement {
     LLScriptStateStatement( ) : LLScriptStatement(0) {};
     LLScriptStateStatement( class LLScriptIdentifier *identifier ) : LLScriptStatement(1, identifier) {};
     virtual void determine_type();
-    virtual char *get_node_name() { return "setstate"; };
+    virtual const char *get_node_name() { return "setstate"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_STATE_STATEMENT; };
 };
 
@@ -408,7 +408,7 @@ class LLScriptJumpStatement : public LLScriptStatement {
   public:
     LLScriptJumpStatement( class LLScriptIdentifier *identifier ) : LLScriptStatement(1, identifier) {};
     virtual void determine_type();
-    virtual char *get_node_name() { return "jump"; };
+    virtual const char *get_node_name() { return "jump"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_JUMP_STATEMENT; };
 };
 
@@ -416,7 +416,7 @@ class LLScriptLabel : public LLScriptStatement {
   public:
     LLScriptLabel( class LLScriptIdentifier *identifier ) : LLScriptStatement(1, identifier) {};
     virtual void define_symbols();
-    virtual char *get_node_name() { return "label"; };
+    virtual const char *get_node_name() { return "label"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_LABEL; };
 };
 
@@ -424,14 +424,14 @@ class LLScriptCaseBlock : public LLScriptStatement {
   public:
     LLScriptCaseBlock( class LLScriptExpression *expression, class LLScriptStatement *body )
       : LLScriptStatement(2, expression, body) {};
-    virtual char *get_node_name() { return "case block"; };
+    virtual const char *get_node_name() { return "case block"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_CASE_LABEL; };
 };
 
 class LLScriptReturnStatement : public LLScriptStatement {
   public:
     LLScriptReturnStatement( class LLScriptExpression *expression ) : LLScriptStatement(1, expression) {};
-    virtual char *get_node_name() { return "return"; };
+    virtual const char *get_node_name() { return "return"; };
     virtual void determine_type();
     virtual LLNodeSubType get_node_sub_type() { return NODE_RETURN_STATEMENT; };
 };
@@ -442,7 +442,7 @@ class LLScriptIfStatement : public LLScriptStatement {
       : LLScriptStatement( 3, expression, true_branch, false_branch ) {};
     virtual void determine_type();
     virtual void final_pre_checks();
-    virtual char *get_node_name() { return "if"; };
+    virtual const char *get_node_name() { return "if"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_IF_STATEMENT; };
 };
 
@@ -452,7 +452,7 @@ class LLScriptForStatement : public LLScriptStatement {
         class LLScriptExpression *cont, class LLScriptStatement *body)
       : LLScriptStatement( 4, init, condition, cont, body ) {};
     virtual void final_pre_checks();
-    virtual char *get_node_name() { return "for"; };
+    virtual const char *get_node_name() { return "for"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_FOR_STATEMENT; };
 };
 
@@ -461,7 +461,7 @@ class LLScriptDoStatement : public LLScriptStatement {
     LLScriptDoStatement( class LLScriptStatement *body, class LLScriptExpression *condition )
       : LLScriptStatement(2, body, condition) {};
     virtual void final_pre_checks();
-    virtual char *get_node_name() { return "do"; };
+    virtual const char *get_node_name() { return "do"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_DO_STATEMENT; };
 };
 
@@ -470,7 +470,7 @@ class LLScriptWhileStatement : public LLScriptStatement {
     LLScriptWhileStatement( class LLScriptExpression *condition, class LLScriptStatement *body )
       : LLScriptStatement(2, condition, body) {};
     virtual void final_pre_checks();
-    virtual char *get_node_name() { return "while"; };
+    virtual const char *get_node_name() { return "while"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_WHILE_STATEMENT; };
 };
 
@@ -478,7 +478,7 @@ class LLScriptSwitchStatement : public LLScriptStatement {
   public:
     LLScriptSwitchStatement( class LLScriptExpression *expression, class LLScriptStatement *body )
       : LLScriptStatement(2, expression, body) { symbol_table = new LLScriptSymbolTable(); };
-    virtual char *get_node_name() { return "switch"; };
+    virtual const char *get_node_name() { return "switch"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_SWITCH_STATEMENT; };
     virtual void final_pre_checks();
     virtual void final_post_checks();
@@ -487,7 +487,7 @@ class LLScriptSwitchStatement : public LLScriptStatement {
 class LLScriptBreakStatement : public LLScriptStatement {
   public:
     LLScriptBreakStatement( ) : LLScriptStatement(0) {};
-    virtual char *get_node_name() { return "break"; };
+    virtual const char *get_node_name() { return "break"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_BREAK_STATEMENT; };
     virtual void final_pre_checks();
 };
@@ -500,7 +500,7 @@ class LLScriptDeclaration : public LLScriptStatement {
     virtual void define_symbols();
     virtual void determine_type();
     virtual void determine_value();
-    virtual char *get_node_name() { return "declaration"; };
+    virtual const char *get_node_name() { return "declaration"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_DECLARATION; };
 };
 
@@ -523,10 +523,10 @@ class LLScriptExpression : public LLASTNode {
     virtual void determine_type();
     virtual void determine_value();
 
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       static char buf[256];
       sprintf( buf, isprint(operation) ? "expression: '%c'" : "expression: =%d", operation );
-      return buf;
+      return (const char *)buf;
     };
     virtual LLNodeType get_node_type() { return NODE_EXPRESSION; };
     int get_operation() { return operation; };
@@ -543,7 +543,7 @@ class LLScriptTypecastExpression : public LLScriptExpression {
       : LLScriptExpression(1, constant) {type = _type;};
 
     virtual void determine_type() {}; // type already determined
-    virtual char *get_node_name() { return "typecast expression"; }
+    virtual const char *get_node_name() { return "typecast expression"; }
     virtual LLNodeSubType get_node_sub_type() { return NODE_TYPECAST_EXPRESSION; };
 };
 
@@ -554,7 +554,7 @@ class LLScriptFunctionExpression : public LLScriptExpression {
     LLScriptFunctionExpression( LLScriptIdentifier *identifier, LLScriptExpression *arguments )
       : LLScriptExpression( 2, identifier, arguments) {};
     virtual void determine_type();
-    virtual char *get_node_name() { return "function call"; }
+    virtual const char *get_node_name() { return "function call"; }
     virtual LLNodeSubType get_node_sub_type() { return NODE_FUNCTION_EXPRESSION; };
 };
 
@@ -568,7 +568,7 @@ class LLScriptVectorExpression : public LLScriptExpression {
     }
     virtual void determine_value();
     virtual void determine_type();
-    virtual char *get_node_name() { return "vector expression"; }
+    virtual const char *get_node_name() { return "vector expression"; }
     virtual LLNodeSubType get_node_sub_type() { return NODE_VECTOR_EXPRESSION; };
 };
 
@@ -582,7 +582,7 @@ class LLScriptQuaternionExpression : public LLScriptExpression {
     };
     virtual void determine_value();
     virtual void determine_type();
-    virtual char *get_node_name() { return "quaternion expression"; };
+    virtual const char *get_node_name() { return "quaternion expression"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_QUATERNION_EXPRESSION; };
 };
 
@@ -591,7 +591,7 @@ class LLScriptListExpression : public LLScriptExpression {
     LLScriptListExpression( LLScriptExpression *c ) : LLScriptExpression( 1, c ) { type = TYPE(LST_LIST); };
     virtual void determine_type() {};
     virtual void determine_value();
-    virtual char *get_node_name() { return "list expression"; };
+    virtual const char *get_node_name() { return "list expression"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_LIST_EXPRESSION; }
 };
 
@@ -600,7 +600,7 @@ class LLScriptLValueExpression : public LLScriptExpression {
     LLScriptLValueExpression( LLScriptIdentifier *identifier )
       : LLScriptExpression(1, identifier) {};
     virtual void determine_type();
-    virtual char *get_node_name() { return "lvalue expression"; };
+    virtual const char *get_node_name() { return "lvalue expression"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_LVALUE_EXPRESSION; };
 };
 

@@ -186,7 +186,7 @@ class LLASTNode {
     virtual void generate_cil() {};
 
     /// symbol functions        ///
-    LLScriptSymbol *lookup_symbol( char *name, LLSymbolType type = SYM_ANY, bool is_case_sensitive = true );
+    LLScriptSymbol *lookup_symbol( const char *name, LLSymbolType type = SYM_ANY, bool is_case_sensitive = true );
     void            define_symbol( LLScriptSymbol *symbol );
     void            check_symbols(); // look for unused symbols, etc
     LLScriptSymbolTable *get_symbol_table() { return symbol_table; }
@@ -196,7 +196,7 @@ class LLASTNode {
     static void set_glloc(YYLTYPE *yylloc) { glloc = *yylloc; };
 
     /// identification          ///
-    virtual char       *get_node_name() { return "node";    };
+    virtual const char *get_node_name() { return "node";    };
     virtual LLNodeType  get_node_type() { return NODE_NODE; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_NO_SUB_TYPE; }
 

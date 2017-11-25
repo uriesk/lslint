@@ -34,7 +34,7 @@ class LLScriptType : public LLASTNode {
     LLScriptType *get_result_type(int op,  LLScriptType *right);
 
     int get_itype() { return itype; } ;
-    virtual char *get_node_name() {
+    virtual const char *get_node_name() {
       switch (itype) {
         case LST_ERROR:         return "error";
         case LST_INTEGER:       return "integer";
@@ -48,7 +48,7 @@ class LLScriptType : public LLASTNode {
         default:                return "!invalid!";
       }
     }
-    virtual char *get_cil_type() {
+    virtual const char *get_cil_type() {
       switch (itype) {
         case LST_ERROR:         throw "trying to gen code for error type!";
         case LST_INTEGER:       return "int32";

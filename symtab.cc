@@ -23,7 +23,7 @@ void LLScriptSymbolTable::remove(LLScriptSymbol *symbol) {
    }
 }
 
-LLScriptSymbol *LLScriptSymbolTable::lookup(char *name, LLSymbolType type, bool is_case_sensitive) {
+LLScriptSymbol *LLScriptSymbolTable::lookup(const char *name, LLSymbolType type, bool is_case_sensitive) {
    std::vector<LLScriptSymbol*>::const_iterator sym;
    int (*strcmpfunc)(const char *s1, const char *s2) = NULL;
    if ( is_case_sensitive )

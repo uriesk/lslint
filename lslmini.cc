@@ -133,7 +133,7 @@ void LLASTNode::walk() {
 }
 
 // Lookup a symbol, propagating up the tree until it is found.
-LLScriptSymbol *LLASTNode::lookup_symbol(char *name, LLSymbolType type, bool is_case_sensitive) {
+LLScriptSymbol *LLASTNode::lookup_symbol(const char *name, LLSymbolType type, bool is_case_sensitive) {
    LLScriptSymbol *sym = NULL;
 
    // If we have a symbol table of our own, look for it there
@@ -340,7 +340,7 @@ void LLASTNode::determine_type() {
    if ( type == NULL ) type = LLScriptType::get( LST_NULL );
 }
 
-static char* operation_str(int operation) {
+static const char* operation_str(int operation) {
    static char buf[16+1];
    switch (operation) {
       case EQ:            return "==";
@@ -357,7 +357,7 @@ static char* operation_str(int operation) {
                           } else {
                              sprintf(buf, "%d", operation);
                           }
-                          return buf;
+                          return (const char *)buf;
    }
 }
 
@@ -455,7 +455,7 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
          // maybe a better way would be to go through all the symtabs looking for names within a certain "string distance"
          char buffer[BUFFER_SIZE+1];
          char *bp;
-         char *suggestions[16];
+         const char *suggestions[16];
          int   cur_sug = 0;
          int   i;
          for ( i = 16; i--; )

@@ -122,11 +122,11 @@ LLScriptConstant *LLScriptFloatConstant::operation(int operation, LLScriptConsta
 
 //////////////////////////////////////////////
 // String Constants
-inline char *join_string( char *left, char *right ) {
+inline const char *join_string( const char *left, const char *right ) {
    char *ns = new char[ strlen(left) + strlen(right) + 1 ];
    strcpy( ns, left );
    strcat( ns, right );
-   return ns;
+   return (const char *)ns;
 }
 
 LLScriptConstant *LLScriptStringConstant::operation(int operation, LLScriptConstant *other_const, YYLTYPE *lloc) {
@@ -138,7 +138,7 @@ LLScriptConstant *LLScriptStringConstant::operation(int operation, LLScriptConst
    // binary op
    switch (other_const->get_node_sub_type()) {
       case NODE_STRING_CONSTANT: {
-                                    char *ov = ((LLScriptStringConstant*)other_const)->get_value();
+                                    const char *ov = ((LLScriptStringConstant*)other_const)->get_value();
                                     switch (operation) {
                                        case '+':           return new LLScriptStringConstant( join_string(value, ov) );
                                        case EQ:            return new LLScriptIntegerConstant( !strcmp(value, ov) );

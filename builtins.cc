@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "lslmini.hh"
 #include "logger.hh"
 
@@ -7,7 +8,7 @@ char *builtins_file = NULL;
 extern char *builtins_txt[];
 
 struct _TypeMap {
-   char *name;
+   const char *name;
    LST_TYPE type;
 } types[] = {
    {"void",    LST_NULL},
@@ -21,7 +22,7 @@ struct _TypeMap {
    {NULL,      LST_ERROR}
 };
 
-LLScriptType *str_to_type(char *str) {
+LLScriptType *str_to_type(const char *str) {
    for (int i = 0; types[i].name != NULL; ++i) {
       if ( strcmp(types[i].name, str) == 0 )
          return LLScriptType::get(types[i].type);
@@ -93,9 +94,9 @@ void LLScriptScript::define_builtins() {
          switch (const_type->get_itype()) {
             case LST_INTEGER:
                {
-                  int num = 0;
-                  if (sscanf(value, "0x%x", &num) == 1
-                      || sscanf(value, "0X%x", &num) == 1
+                  int32_t num = 0;
+                  if (sscanf(value, "0x%x", (uint32_t *)&num) == 1
+                      || sscanf(value, "0X%x", (uint32_t *)&num) == 1
                       || sscanf(value, "%d", &num) == 1) {
                      constant = new LLScriptIntegerConstant(num);
                   }
