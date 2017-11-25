@@ -285,9 +285,9 @@ global_variable
 			$$ = NULL;
 		}
 	}
-	| name_type '=' error ';'
+	| name_type error ';'
 	{
-		$$ = NULL;
+		$$ = new LLScriptGlobalVariable($1, NULL);
 	}
 	;
 
@@ -511,6 +511,10 @@ compound_statement
 	{
 		$$ = new LLScriptStatement(0);
 	}
+	| '{' statements error '}'
+	{
+		$$ = new LLScriptCompoundStatement($2);
+	}
 	;
 
 statements
@@ -603,6 +607,10 @@ statement
 	| BREAK ';'
 	{
 		$$ = new LLScriptBreakStatement();
+	}
+	| declaration error ';'
+	{
+		$$ = $1;
 	}
 	| error ';'
 	{
