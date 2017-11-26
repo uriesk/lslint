@@ -5,7 +5,7 @@
 #include "logger.hh"
 
 char *builtins_file = NULL;
-extern char *builtins_txt[];
+extern const char *builtins_txt[];
 
 struct _TypeMap {
    const char *name;
