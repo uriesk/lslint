@@ -185,7 +185,7 @@ void LLASTNode::define_symbol(LLScriptSymbol *symbol) {
          if ( parent ) {
             shadow = parent->lookup_symbol(symbol->get_name(), SYM_ANY);
 
-            if ( shadow!= NULL ) {
+            if ( shadow != NULL ) {
                if (shadow->get_sub_type() == SYM_BUILTIN) {
 
                   // Events and constants are reserved; functions aren't.
@@ -256,7 +256,7 @@ void LLScriptGlobalVariable::define_symbols() {
    identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_GLOBAL, identifier->get_lloc()));
    define_symbol(identifier->get_symbol());
 
-   // if it's initialized, set it's constant value
+   // if it's initialized, set its constant value
    if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE )
       identifier->get_symbol()->set_constant_value( get_child(1)->get_child(0)->get_constant_value() );
 }
@@ -638,6 +638,9 @@ void LLScriptFunctionExpression::determine_type() {
 void LLScriptLValueExpression::determine_type() {
    LLScriptIdentifier *id = (LLScriptIdentifier *) get_child(0);
    id->resolve_symbol( SYM_VARIABLE );
+   if ( id->get_symbol() != NULL && id->get_symbol()->get_sub_type() == SYM_BUILTIN && id->get_member() != NULL ) {
+       ERROR( HERE, E_INVALID_MEMBER, id->get_name(), id->get_member() );
+   }
    type = id->get_type();
 }
 
