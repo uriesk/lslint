@@ -38,7 +38,7 @@ endif
 
 ifndef WINDOWS
 OPTIMIZE ?= 
-CXX = g++ -std=c++11 -g -Wall -pedantic -fno-omit-frame-pointer -ffloat-store
+CXX = g++ -g -Wall -std=c++98 -pedantic-errors -fno-omit-frame-pointer -ffloat-store
 CXXOUTPUT = -o
 ifndef MAC
 LD = g++ -g -static
