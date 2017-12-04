@@ -15,6 +15,8 @@ enum LST_TYPE {
   LST_VECTOR        = 5,
   LST_QUATERNION    = 6,
   LST_LIST          = 7,    // ??
+
+  LST_LAST
 };
 
 class LLScriptType : public LLASTNode {

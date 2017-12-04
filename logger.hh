@@ -31,6 +31,8 @@ enum LogLevel {
   LOG_DEBUG_MINOR,      // minor debug messages
   LOG_DEBUG_SPAM,       // spammy debug messages
   LOG_CONTINUE,         // continuation of last message
+
+  LOG_LAST
 };
 
 enum ErrorCode {
@@ -209,7 +211,7 @@ class LogMessage {
 
   private:
     LogLevel            type;
-    
+
     // we need our own copy of loc, because messages logged in the parser will be
     // handing us a copy of a loc structure that is constantly changing, and will
     // be invalid when we go to sort.

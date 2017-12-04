@@ -24,6 +24,7 @@ enum LLNodeType {
   NODE_STATEMENT,
   NODE_EXPRESSION,
 
+  NODE_LAST
 };
 
 // Node Sub-types
