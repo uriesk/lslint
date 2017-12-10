@@ -140,11 +140,7 @@ enum AssertType {
 #ifdef DEBUG_LEVEL
 #define DEBUG LOG
 #else /* not DEBUG_LEVEL */
-#ifdef __GNUC__
-#define DEBUG(args...)
-#else /* not __GNUC__ */
-#define DEBUG(...)
-#endif /* not __GNUC__ */
+static inline void DEBUG(...) { }
 #endif /* not DEBUG_LEVEL */
 #endif /* not _MSC_VER */
 
