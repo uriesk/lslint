@@ -100,6 +100,26 @@ void check_cond(LLScriptExpression *expr, bool warn_if_true) {
    }
 }
 
+void LLScriptListExpression::final_pre_checks() {
+   LLASTNode *elem;
+   for ( elem = get_children(); elem; elem = elem->get_next() )
+      if ( elem->get_type()->get_itype() == LST_LIST )
+          ERROR( IN(elem), E_LIST_IN_LIST );
+}
+
+void LLScriptListConstant::final_pre_checks() {
+   LLASTNode *elem;
+   for ( elem = get_children(); elem; elem = elem->get_next() ) {
+      if ( elem->get_type()->get_itype() == LST_LIST ) {
+         if (elem->get_node_type() == NODE_SIMPLE_ASSIGNABLE) {
+            ERROR( IN(elem->get_child(0)), E_LIST_IN_LIST );
+         } else {
+            ERROR( IN(elem), E_LIST_IN_LIST );
+         }
+      }
+   }
+}
+
 void LLScriptIfStatement::final_pre_checks() {
    check_cond((LLScriptExpression*)get_child(0), true);
 }

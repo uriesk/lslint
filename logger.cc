@@ -134,11 +134,11 @@ void Logger::logv(LogLevel level, YYLTYPE *yylloc, const char *fmt, va_list args
 
    if (file_path != NULL)
    {
-      bp += sprintf(bp, "%s::", file_path); 
+      bp += sprintf(bp, "%s::", file_path);
    }
    bp += sprintf(bp, "%5s:: ", type );
-   if ( yylloc != NULL ) { 
-      bp += sprintf(bp, "(%3d,%3d)", yylloc->first_line, yylloc->first_column); 
+   if ( yylloc != NULL ) {
+      bp += sprintf(bp, "(%3d,%3d)", yylloc->first_line, yylloc->first_column);
       if ( show_end )
          bp += sprintf(bp, "-(%3d,%3d)", yylloc->last_line, yylloc->last_column);
       bp += sprintf(bp, ": ");
@@ -223,7 +223,7 @@ void LogMessage::cont( char *message ) {
 void LogMessage::print( FILE *fp ) {
    std::vector<char*>::const_iterator i;
    for ( i = messages.begin(); i != messages.end(); ++i ) {
-      if ( i != messages.begin() ) 
+      if ( i != messages.begin() )
          fprintf( fp, "%20s", "");
       fprintf( fp, "%s\n", *i );
    }
@@ -284,6 +284,7 @@ const char *Logger::error_messages[] = {
    "Case type incompatible with switch type.",                        // 10035
    "Declaration needs braces {}.",                                    // 10036
    "`%s' requires god mode. Use lslint -G to enable god mode.",       // 10037
+   "Lists can't contain lists.",                                      // 10038
 
 };
 
