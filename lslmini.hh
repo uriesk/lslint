@@ -235,6 +235,8 @@ class LLScriptListConstant : public LLScriptConstant {
       return i;
     }
 
+    virtual void final_pre_checks();
+
     virtual LLScriptConstant *operation(int op, LLScriptConstant *other_const, YYLTYPE *lloc);
 
   private:
@@ -593,6 +595,7 @@ class LLScriptListExpression : public LLScriptExpression {
     virtual void determine_value();
     virtual const char *get_node_name() { return "list expression"; };
     virtual LLNodeSubType get_node_sub_type() { return NODE_LIST_EXPRESSION; }
+    virtual void final_pre_checks();
 };
 
 class LLScriptLValueExpression : public LLScriptExpression {

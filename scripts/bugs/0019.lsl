@@ -16,8 +16,8 @@ default {
                                                         PARCEL_DETAILS_DESC, PARCEL_DETAILS_OWNER,
                                                         PARCEL_DETAILS_GROUP, PARCEL_DETAILS_AREA ] );
 
-        list    use_stuff = [ prim_count, prim_owners, parcel_max_prims,
-                              parcel_prim_count, parcel_details,
+        list    use_stuff = [ prim_count, prim_owners, parcel_max_prims, // $[E10038] lists can't contain lists
+                              parcel_prim_count, parcel_details,         // $[E10038]
                               PARCEL_FLAG_RESTRICT_PUSHOBJECT |
                               REGION_FLAG_RESTRICT_PUSHOBJECT ];
 

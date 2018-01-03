@@ -86,6 +86,7 @@ enum ErrorCode {
     E_INCOMPATIBLE_CASE_TYPE,          // 10035
     E_DECLARATION_NOT_ALLOWED,         // 10036
     E_GOD_MODE_FUNCTION,               // 10037
+    E_LIST_IN_LIST,                    // 10038
     E_LAST
 
 
