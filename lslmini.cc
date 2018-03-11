@@ -244,7 +244,7 @@ void LLScriptDeclaration::define_symbols() {
    if (   type == NODE_IF_STATEMENT || type == NODE_FOR_STATEMENT
        || type == NODE_DO_STATEMENT || type == NODE_WHILE_STATEMENT) {
       ERROR( HERE, E_DECLARATION_NOT_ALLOWED );
-      return;
+      // fall through to define the symbol anyway (issue #73)
    }
    LLScriptIdentifier *identifier = (LLScriptIdentifier *)get_children();
    identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_LOCAL, identifier->get_lloc()) );
