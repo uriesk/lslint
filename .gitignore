@@ -1,7 +1,9 @@
 # Compiler output files #
 #########################
+*.o
 *.obj
 *.output
+lslint
 *.log
 *db
 *.tlog
@@ -23,3 +25,6 @@ ehthumbs.db
 Thumbs.db
 *.suo
 /binary
+# Editor backups #
+##################
+*~
