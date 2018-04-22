@@ -49,9 +49,9 @@ void LLScriptGlobalFunction::final_pre_checks() {
    }
 
    if (id->get_symbol() != NULL) {
-      LLScriptType *tipe = id->get_symbol()->get_type();
+      LLScriptType *type = id->get_symbol()->get_type();
 
-      if (tipe->get_itype() != LST_NULL && !allret(statement)) {
+      if (type->get_itype() != LST_NULL && !allret(statement)) {
          ERROR(IN(get_child(0)), E_NOT_ALL_PATHS_RETURN);
       }
    }
