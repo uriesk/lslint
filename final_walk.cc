@@ -120,6 +120,27 @@ void LLScriptListConstant::final_pre_checks() {
    }
 }
 
+void LLScriptTypecastExpression::final_pre_checks() {
+   if (!mono_mode && get_type()->get_itype() == LST_LIST) {
+      // Check if it only has a variable of type string or key
+      LLASTNode *child = get_children();
+      if (child && !child->get_next() && child->get_node_type() == NODE_EXPRESSION && child->get_node_sub_type() == NODE_LVALUE_EXPRESSION) {
+         // We're on the right track. Go one level deeper.
+         child = child->get_children();
+         if (child && !child->get_next() && child->get_node_type() == NODE_IDENTIFIER) {
+            LST_TYPE type = child->get_type()->get_itype();
+            // A-ha!
+            if (type == LST_STRING) {
+                ERROR(HERE, W_KEY_OR_STR_TO_LIST, "string", "key", "string");
+            }  else if (type == LST_KEY) {
+                ERROR(HERE, W_KEY_OR_STR_TO_LIST, "key", "string", "key");
+            }
+         }
+      }
+
+   }
+}
+
 void LLScriptIfStatement::final_pre_checks() {
    check_cond((LLScriptExpression*)get_child(0), true);
 }

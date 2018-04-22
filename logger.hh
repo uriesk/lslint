@@ -113,6 +113,7 @@ enum ErrorCode {
     W_DUPLICATE_CASE,                  // 20018
     W_L_STRING,                        // 20019
     W_PRINT,                           // 20020
+    W_KEY_OR_STR_TO_LIST,              // 20021
     W_LAST
 
 };

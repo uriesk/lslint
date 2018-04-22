@@ -317,4 +317,6 @@ const char *Logger::warning_messages[] = {
    "Prefixing a string with L will cause a double quote (\")\n"
      "to be inserted at the beginning of the string.",                // 20019
    "print does nothing. Attempting to use the result %s.\n",          // 20020
+   "In LSO, (list)%s_var can result in a variable of type %s in the list."
+     " Use [%s_var] instead.",                                      // 20021
 };
