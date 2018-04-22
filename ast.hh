@@ -178,8 +178,8 @@ class LLASTNode {
     void propagate_values();
     virtual void determine_value();
 
-    // final pre walk checks    TODO: come up with a better name?
-    void final_pre_walk();
+    // final walk checks
+    void final_walk();
     virtual void final_pre_checks() {};
     virtual void final_post_checks() {};
 

@@ -1,10 +1,10 @@
 #include "lslmini.hh"
 
-void LLASTNode::final_pre_walk() {
+void LLASTNode::final_walk() {
    LLASTNode *node;
    final_pre_checks();
    for ( node = get_children(); node; node = node->get_next() )
-      node->final_pre_walk();
+      node->final_walk();
    final_post_checks();
 }
 

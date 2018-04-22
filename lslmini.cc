@@ -1077,12 +1077,12 @@ nextarg:
       }
 
       LOG(LOG_INFO, NULL, "Script parsed, collecting symbols");
-      script->collect_symbols();
+      script->collect_symbols();    // in this file
       LOG(LOG_INFO, NULL, "Propagating types");
-      script->propagate_types();
-      script->propagate_values();
-      script->check_symbols();
-      script->final_pre_walk();
+      script->propagate_types();    // in this file
+      script->propagate_values();   // in values.cc
+      script->check_symbols();      // in this file, calls symtab.cc
+      script->final_walk();         // in final_walk.cc
       Logger::get()->report();
       if ( show_tree ) {
          LOG(LOG_INFO, NULL, "Tree:");
