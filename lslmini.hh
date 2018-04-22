@@ -547,6 +547,7 @@ class LLScriptTypecastExpression : public LLScriptExpression {
     virtual void determine_type() {}; // type already determined
     virtual const char *get_node_name() { return "typecast expression"; }
     virtual LLNodeSubType get_node_sub_type() { return NODE_TYPECAST_EXPRESSION; };
+    virtual void final_pre_checks();
 };
 
 class LLScriptFunctionExpression : public LLScriptExpression {

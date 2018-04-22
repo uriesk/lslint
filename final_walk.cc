@@ -49,9 +49,9 @@ void LLScriptGlobalFunction::final_pre_checks() {
    }
 
    if (id->get_symbol() != NULL) {
-      LLScriptType *tipe = id->get_symbol()->get_type();
+      LLScriptType *type = id->get_symbol()->get_type();
 
-      if (tipe->get_itype() != LST_NULL && !allret(statement)) {
+      if (type->get_itype() != LST_NULL && !allret(statement)) {
          ERROR(IN(get_child(0)), E_NOT_ALL_PATHS_RETURN);
       }
    }
@@ -117,6 +117,27 @@ void LLScriptListConstant::final_pre_checks() {
             ERROR( IN(elem), E_LIST_IN_LIST );
          }
       }
+   }
+}
+
+void LLScriptTypecastExpression::final_pre_checks() {
+   if (!mono_mode && get_type()->get_itype() == LST_LIST) {
+      // Check if it only has a variable of type string or key
+      LLASTNode *child = get_children();
+      if (child && !child->get_next() && child->get_node_type() == NODE_EXPRESSION && child->get_node_sub_type() == NODE_LVALUE_EXPRESSION) {
+         // We're on the right track. Go one level deeper.
+         child = child->get_children();
+         if (child && !child->get_next() && child->get_node_type() == NODE_IDENTIFIER) {
+            LST_TYPE type = child->get_type()->get_itype();
+            // A-ha!
+            if (type == LST_STRING) {
+                ERROR(HERE, W_KEY_OR_STR_TO_LIST, "string", "key", "string");
+            }  else if (type == LST_KEY) {
+                ERROR(HERE, W_KEY_OR_STR_TO_LIST, "key", "string", "key");
+            }
+         }
+      }
+
    }
 }
 

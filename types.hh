@@ -35,7 +35,7 @@ class LLScriptType : public LLASTNode {
     bool can_coerce( LLScriptType *to );
     LLScriptType *get_result_type(int op,  LLScriptType *right);
 
-    int get_itype() { return itype; } ;
+    LST_TYPE get_itype() { return itype; } ;
     virtual const char *get_node_name() {
       switch (itype) {
         case LST_ERROR:         return "error";
