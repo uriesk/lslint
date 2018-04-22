@@ -242,17 +242,13 @@ globals
 	}
 	| global globals
 	{
-		if ( $1 ) {
+		if ( $1 && $2 ) {
 			DEBUG( LOG_DEBUG_SPAM, NULL, "** global [%p,%p] globals [%p,%p]\n", $1->get_prev(), $1->get_next(), $2->get_prev(), $2->get_next());
 			$1->add_next_sibling($2);
 			$$ = $1;
 		} else {
-			$$ = $2;
+			$$ = $2 ? $2 : $1;
 		}
-	}
-	| error ';'
-	{
-		$$ = NULL;
 	}
 	;
 
@@ -264,6 +260,10 @@ global
 	| global_function
 	{
 		$$ = new LLScriptGlobalStorage(NULL, $1);
+	}
+	| error ';'
+	{
+		$$ = NULL;
 	}
 	;
 
