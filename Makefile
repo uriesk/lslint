@@ -80,7 +80,7 @@ OBJS = lslmini.tab.o lex.yy.o lslmini.o symtab.o builtins.o builtins_txt.o types
 all: $(PROGRAM)
 
 $(PROGRAM): $(OBJS)
-	$(LD) $(LDOUTPUT)"$@" $^
+	$(LD) $(LDFLAGS) $(LDOUTPUT)"$@" $^
 	$(UPX) "$@"
 
 clean:
@@ -122,6 +122,6 @@ lex.yy.c: lslmini.l
 	$(LEX) lslmini.l
 
 .c.o .cc.o:
-	$(CXX) $(CXXOUTPUT)"$@" -c $<
+	$(CXX) $(CXXFLAGS) $(CXXOUTPUT)"$@" -c $<
 
 .PHONY: all clean check
