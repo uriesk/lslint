@@ -4,7 +4,7 @@
 #include "lslmini.hh"
 #include "logger.hh"
 
-char *builtins_file = NULL;
+const char *builtins_file = NULL;
 extern const char *builtins_txt[];
 
 struct _TypeMap {

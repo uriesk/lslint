@@ -39,7 +39,7 @@ std::string getBuildDate() {
 }
 
 extern FILE *yyin;
-extern char *builtins_file;
+extern const char *builtins_file;
 //extern int yynerrs;
 int yynwarns = 0;                // not defined by flex but named for consistency
 
@@ -396,8 +396,8 @@ void LLScriptExpression::determine_type() {
 //      integer test = 1;
 //      llOwnerSay(test());
 //    }
-//  But if "test" looked itself up, it would think it is an integer. It's parent function
-//  expression node can tell it what it needs to be before determining it's own type.
+//  But if "test" looked itself up, it would think it is an integer. Its parent function
+//  expression node can tell it what it needs to be before determining its own type.
 void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
 
    // If we already have a symbol, we don't need to look it up.
@@ -529,7 +529,7 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
          return;
       }
 
-      /// Make sure it's a variable
+      // Make sure it's a variable
       if ( symbol_type != SYM_VARIABLE ) {
          ERROR( HERE, E_MEMBER_NOT_VARIABLE, name, member, LLScriptSymbol::get_type_name(symbol_type));
          symbol = NULL;
@@ -852,7 +852,7 @@ void LLASTNode::check_symbols() {
 }
 
 
-void usage(char *name) {
+void usage(const char *name) {
    printf("Usage: %s [options] [input]\n", name);
    printf("Options: \n");
    printf("\t-m\t\tFlag: Use Mono rules for the analysis (default on)\n");
@@ -929,7 +929,7 @@ int yylex_init( void ** );
 void yyset_in( FILE *, void *);
 int yylex_destroy( void *) ;
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
    int i, j;
    FILE *yyin = NULL;
    bool show_tree = false;
@@ -946,7 +946,7 @@ int main(int argc, char **argv) {
    // HACK: Parse long options before anything else.
    for ( i = 1; i < argc; ++i ) {
       if (argv[i][0] == '-' && argv[i][1] == '-') {
-         char *optiontext = argv[i] + 2;
+         const char *optiontext = argv[i] + 2;
          if ( !strcmp(optiontext, "version") ) {
             short_version();
             return 0;
