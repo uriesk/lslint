@@ -389,6 +389,66 @@ void LLScriptExpression::determine_type() {
    }
 }
 
+static void find_suggestions(LLScriptIdentifier *id, char *buffer) {
+   // look for typos
+   // FIXME: this is mostly hacked together and unsafe (bp can overrun buffer, cur_sug can overrun suggestions)
+   // maybe a better way would be to go through all the symtabs looking for names within a certain "string distance"
+   char *bp;
+   const char *suggestions[16];
+   int   cur_sug = 0;
+   int   i;
+   const char *name = id->get_name();
+   LLScriptSymbol *symbol = id->get_symbol();
+   for ( i = 16; i--; )
+      suggestions[i] = NULL;
+
+   // try case insensitive
+   symbol = id->lookup_symbol( name, SYM_ANY, false );
+   if ( symbol != NULL )
+      suggestions[cur_sug++] = symbol->get_name();
+
+   if ( strstr(name, "To") ) {
+      // try replacing "To" with "2"
+      for (i = 0, bp = buffer; name[i]; i++) {
+         if ( (name[i] == 'T' || name[i] == 't') && (name[i+1] == 'O' || name[i+1] == 'o')) {
+            *bp++ = '2'; i++;
+         } else
+            *bp++ = name[i];
+      }
+      *bp = 0;
+      symbol = id->lookup_symbol( buffer, SYM_ANY, false );
+      if ( symbol != NULL )
+         suggestions[cur_sug++] = symbol->get_name();
+   }
+
+   // try replacing "2" with "To"
+   if ( strstr(name, "2") ) {
+      for (i = 0, bp = buffer; name[i]; i++) {
+         if ( name[i] == '2') {
+            *bp++ = 'T'; *bp++ = 'o';
+         } else
+            *bp++ = name[i];
+      }
+      *bp = 0;
+      symbol = id->lookup_symbol( buffer, SYM_ANY, false );
+      if ( symbol != NULL )
+         suggestions[cur_sug++] = symbol->get_name();
+   }
+
+   for (i = 0, buffer[0] = 0; suggestions[i] != NULL; i++ ) {
+      // add comma if not first
+      if ( i != 0 ) {
+         strncat(buffer, ", ",         BUFFER_SIZE);
+         // add "or" if not last
+         if ( suggestions[i+1] == NULL )
+            strncat(buffer, "or ",        BUFFER_SIZE);
+      }
+      strncat(buffer, "`",            BUFFER_SIZE);
+      strncat(buffer, suggestions[i], BUFFER_SIZE);
+      strncat(buffer, "'",            BUFFER_SIZE);
+   }
+}
+
 /// Identifiers should have their type/symbol set by their parent node, because they don't know what
 /// kind of symbol they represent by themselves. For example, this should work:
 //    string test() { return "hi"; }
@@ -450,62 +510,10 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
                    "", LLScriptSymbol::get_type_name(symbol->get_symbol_type()));
          }
       } else if (symbol_type != SYM_EVENT) { // if it's an event, don't report undefined identifier
-         // look for typos
-         // FIXME: this is mostly hacked together and unsafe (bp can overrun buffer, cur_sug can overrun suggestions)
-         // maybe a better way would be to go through all the symtabs looking for names within a certain "string distance"
          char buffer[BUFFER_SIZE+1];
-         char *bp;
-         const char *suggestions[16];
-         int   cur_sug = 0;
-         int   i;
-         for ( i = 16; i--; )
-            suggestions[i] = NULL;
+         buffer[0] = 0;
 
-         // try case insensitive
-         symbol = lookup_symbol( name, SYM_ANY, false );
-         if ( symbol != NULL )
-            suggestions[cur_sug++] = symbol->get_name();
-
-         if ( strstr(name, "To") ) {
-            // try replacing "To" with "2"
-            for (i = 0, bp = buffer; name[i]; i++) {
-               if ( (name[i] == 'T' || name[i] == 't') && (name[i+1] == 'O' || name[i+1] == 'o')) {
-                  *bp++ = '2'; i++;
-               } else
-                  *bp++ = name[i];
-            }
-            *bp = 0;
-            symbol = lookup_symbol( buffer, SYM_ANY, false );
-            if ( symbol != NULL )
-               suggestions[cur_sug++] = symbol->get_name();
-         }
-
-         // try replacing "2" with "To"
-         if ( strstr(name, "2") ) {
-            for (i = 0, bp = buffer; name[i]; i++) {
-               if ( name[i] == '2') {
-                  *bp++ = 'T'; *bp++ = 'o';
-               } else
-                  *bp++ = name[i];
-            }
-            *bp = 0;
-            symbol = lookup_symbol( buffer, SYM_ANY, false );
-            if ( symbol != NULL )
-               suggestions[cur_sug++] = symbol->get_name();
-         }
-
-         for (i = 0, buffer[0] = 0; suggestions[i] != NULL; i++ ) {
-            // add comma if not first
-            if ( i != 0 ) {
-               strncat(buffer, ", ",         BUFFER_SIZE);
-               // add "or" if not last
-               if ( suggestions[i+1] == NULL )
-                  strncat(buffer, "or ",        BUFFER_SIZE);
-            }
-            strncat(buffer, "`",            BUFFER_SIZE);
-            strncat(buffer, suggestions[i], BUFFER_SIZE);
-            strncat(buffer, "'",            BUFFER_SIZE);
-         }
+         find_suggestions(this, buffer);
          if ( buffer[0] == 0 ) {
             ERROR( HERE, E_UNDECLARED, name );
          } else {
