@@ -141,7 +141,7 @@ LLScriptSymbol *LLASTNode::lookup_symbol(const char *name, LLSymbolType type, bo
       sym = symbol_table->lookup( name, type, is_case_sensitive );
 
    // If we have no symbol table, or it wasn't in it, but we have a parent, ask them
-   if ( sym == NULL && parent )
+   if ( (sym == NULL || (type == SYM_VARIABLE && !sym->was_declared())) && parent )
       sym = parent->lookup_symbol( name, type, is_case_sensitive );
 
    return sym;
@@ -255,6 +255,7 @@ void LLScriptGlobalVariable::define_symbols() {
    LLScriptIdentifier *identifier = (LLScriptIdentifier *)get_children();
    identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_GLOBAL, identifier->get_lloc()));
    define_symbol(identifier->get_symbol());
+   identifier->get_symbol()->set_global();
 
    // if it's initialized, set its constant value
    if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE )
@@ -290,6 +291,7 @@ void LLScriptFunctionDec::define_symbols() {
       identifier = (LLScriptIdentifier *)node;
       identifier->set_symbol( new LLScriptSymbol( identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_FUNCTION_PARAMETER, node->get_lloc() ) );
       define_symbol( identifier->get_symbol() );
+      identifier->get_symbol()->set_declared();
       node = node->get_next();
    }
 }
@@ -301,6 +303,7 @@ void LLScriptEventDec::define_symbols() {
       identifier = (LLScriptIdentifier *)node;
       identifier->set_symbol( new LLScriptSymbol( identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_EVENT_PARAMETER, node->get_lloc() ) );
       define_symbol( identifier->get_symbol() );
+      identifier->get_symbol()->set_declared();
       node = node->get_next();
    }
 }
@@ -458,13 +461,18 @@ static void find_suggestions(LLScriptIdentifier *id, char *buffer) {
 //    }
 //  But if "test" looked itself up, it would think it is an integer. Its parent function
 //  expression node can tell it what it needs to be before determining its own type.
-void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
+void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type, bool is_simple) {
+
 
    // If we already have a symbol, we don't need to look it up.
+   /*
+   // Should never happen: no reason to ever have visited this node
+   // before during this tree walk.
    if ( symbol != NULL ) {
       type = symbol->get_type();
       return;
    }
+   */
 
    // If it's a builtin, check for deprecation/godmode
    if ( symbol_type == SYM_FUNCTION ) {
@@ -496,9 +504,23 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
    // Look up the symbol with the requested type
    symbol = lookup_symbol( name, symbol_type );
 
-   if ( symbol == NULL ) {                        // no symbol of the right type
+   bool visible = true;
+
+   // At this point, we have all symbols defined, but some are not legal.
+   // Check the cases where we should report an error even if it already
+   // exists in the symbol table.
+   if ( symbol && symbol_type == SYM_VARIABLE && !symbol->was_declared()
+        && (!symbol->is_global() || is_simple) ) {
+      visible = false;
+   }
+
+   if ( symbol == NULL || !visible) {             // no symbol of the right type
       symbol = lookup_symbol( name, SYM_ANY );    // so try the wrong one, so we can have a more descriptive error message in that case.
-      if (symbol != NULL) {
+      if ( symbol && symbol_type == SYM_VARIABLE && !symbol->was_declared()
+         && (!symbol->is_global() || is_simple) ) {
+         visible = false;
+      }
+      if ( symbol != NULL && visible ) {
          if (symbol->get_symbol_type() == SYM_EVENT) {
             ERROR( HERE, E_WRONG_TYPE, name,
                   LLScriptSymbol::get_type_name(symbol_type),
@@ -513,7 +535,12 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
          char buffer[BUFFER_SIZE+1];
          buffer[0] = 0;
 
-         find_suggestions(this, buffer);
+         // check that the symbol really does not exist,
+         // otherwise we get: "x is undeclared, did you mean x?"
+         // for symbols that already exist but are not visible
+         if (!symbol) {
+            find_suggestions(this, buffer);
+         }
          if ( buffer[0] == 0 ) {
             ERROR( HERE, E_UNDECLARED, name );
          } else {
@@ -591,7 +618,7 @@ void LLScriptSimpleAssignable::determine_type() {
 
    if ( node->get_node_type() == NODE_IDENTIFIER ) {
       LLScriptIdentifier *id = (LLScriptIdentifier *) node;
-      id->resolve_symbol( SYM_VARIABLE );
+      id->resolve_symbol( SYM_VARIABLE, true );
       type = id->get_type();
    } else if ( node->get_node_type() == NODE_CONSTANT ) {
       type = node->get_type();
@@ -736,6 +763,7 @@ void LLScriptJumpStatement::determine_type() {
 
 void LLScriptGlobalVariable::determine_type() {
    LLScriptIdentifier *id = (LLScriptIdentifier *) get_child(0);
+   if ( id->get_symbol() ) id->get_symbol()->set_declared();
    LLASTNode *node = get_child(1);
    if ( node == NULL || node->get_node_type() == NODE_NULL ) return;
    if ( !node->get_type()->can_coerce(id->get_type()) ) {
@@ -747,6 +775,7 @@ void LLScriptGlobalVariable::determine_type() {
 void LLScriptDeclaration::determine_type() {
    LLScriptIdentifier *id = (LLScriptIdentifier *) get_child(0);
    LLASTNode *node = get_child(1);
+   if ( id->get_symbol() ) id->get_symbol()->set_declared();
    if ( node == NULL || node->get_node_type() == NODE_NULL ) return;
    if ( !node->get_type()->can_coerce(id->get_type()) ) {
       ERROR( HERE, E_WRONG_TYPE_IN_ASSIGNMENT, id->get_type()->get_node_name(),
