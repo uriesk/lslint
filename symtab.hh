@@ -11,11 +11,13 @@ class LLScriptSymbol {
   public:
     LLScriptSymbol( const char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, YYLTYPE *lloc, class LLScriptFunctionDec *function_decl = NULL )
       : name(name), type(type), symbol_type(symbol_type), sub_type(sub_type), lloc(*lloc), function_decl(function_decl),
-      constant_value(NULL), references(0), assignments(0), cur_references(0) {};
+      constant_value(NULL), references(0), assignments(0), cur_references(0),
+      declared(false), global(false) {};
 
     LLScriptSymbol( const char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, class LLScriptFunctionDec *function_decl = NULL )
       : name(name), type(type), symbol_type(symbol_type), sub_type(sub_type), function_decl(function_decl),
-      constant_value(NULL), references(0), assignments(0), cur_references(0) {
+      constant_value(NULL), references(0), assignments(0), cur_references(0),
+      declared(false), global(false) {
           static const YYLTYPE zero_lloc = {};
           lloc = zero_lloc;
     };
@@ -28,6 +30,10 @@ class LLScriptSymbol {
     int                  add_reference()    { return ++references; }
     int                  get_assignments()  { return assignments; }
     int                  add_assignment()   { return ++assignments; }
+    bool                 was_declared()     { return declared; }
+    void                 set_declared()     { declared = true; }
+    bool                 is_global()        { return global; }
+    void                 set_global()       { global = true; }
 
     LLSymbolType         get_symbol_type()  { return symbol_type; }
     LLSymbolSubType      get_sub_type()     { return sub_type;    }
@@ -60,6 +66,8 @@ class LLScriptSymbol {
     int                  references;            // how many times this symbol is referred to
     int                  assignments;           // how many times it is assigned to
     int                  cur_references;        // how many times the current const_value was referred to
+    bool                 declared;              // was it declared before?
+    bool                 global;                // is it a global symbol?
 };
 
 class LLScriptSymbolTable {

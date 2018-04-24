@@ -4,7 +4,7 @@
 #include "lslmini.hh"
 #include "logger.hh"
 
-char *builtins_file = NULL;
+const char *builtins_file = NULL;
 extern const char *builtins_txt[];
 
 struct _TypeMap {
@@ -150,6 +150,8 @@ void LLScriptScript::define_builtins() {
          }
          symbol->set_constant_value(constant);
          define_symbol(symbol);
+         symbol->set_declared();
+         symbol->set_global();
       }
       else if (!strcmp(ret_type, "event")) {
          name     = strtok(NULL, " (),");

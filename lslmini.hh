@@ -91,7 +91,7 @@ class LLScriptIdentifier : public LLASTNode {
 
     void determine_value();
 
-    void resolve_symbol(LLSymbolType symbol_type);
+    void resolve_symbol(LLSymbolType symbol_type, bool is_simple = false);
     void set_symbol( LLScriptSymbol *_symbol ) { symbol = _symbol; };
     LLScriptSymbol *get_symbol() { return symbol; };
 

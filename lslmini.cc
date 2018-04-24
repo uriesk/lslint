@@ -39,7 +39,7 @@ std::string getBuildDate() {
 }
 
 extern FILE *yyin;
-extern char *builtins_file;
+extern const char *builtins_file;
 //extern int yynerrs;
 int yynwarns = 0;                // not defined by flex but named for consistency
 
@@ -141,7 +141,7 @@ LLScriptSymbol *LLASTNode::lookup_symbol(const char *name, LLSymbolType type, bo
       sym = symbol_table->lookup( name, type, is_case_sensitive );
 
    // If we have no symbol table, or it wasn't in it, but we have a parent, ask them
-   if ( sym == NULL && parent )
+   if ( (sym == NULL || (type == SYM_VARIABLE && !sym->was_declared())) && parent )
       sym = parent->lookup_symbol( name, type, is_case_sensitive );
 
    return sym;
@@ -255,6 +255,7 @@ void LLScriptGlobalVariable::define_symbols() {
    LLScriptIdentifier *identifier = (LLScriptIdentifier *)get_children();
    identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_GLOBAL, identifier->get_lloc()));
    define_symbol(identifier->get_symbol());
+   identifier->get_symbol()->set_global();
 
    // if it's initialized, set its constant value
    if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE )
@@ -290,6 +291,7 @@ void LLScriptFunctionDec::define_symbols() {
       identifier = (LLScriptIdentifier *)node;
       identifier->set_symbol( new LLScriptSymbol( identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_FUNCTION_PARAMETER, node->get_lloc() ) );
       define_symbol( identifier->get_symbol() );
+      identifier->get_symbol()->set_declared();
       node = node->get_next();
    }
 }
@@ -301,6 +303,7 @@ void LLScriptEventDec::define_symbols() {
       identifier = (LLScriptIdentifier *)node;
       identifier->set_symbol( new LLScriptSymbol( identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_EVENT_PARAMETER, node->get_lloc() ) );
       define_symbol( identifier->get_symbol() );
+      identifier->get_symbol()->set_declared();
       node = node->get_next();
    }
 }
@@ -389,6 +392,66 @@ void LLScriptExpression::determine_type() {
    }
 }
 
+static void find_suggestions(LLScriptIdentifier *id, char *buffer) {
+   // look for typos
+   // FIXME: this is mostly hacked together and unsafe (bp can overrun buffer, cur_sug can overrun suggestions)
+   // maybe a better way would be to go through all the symtabs looking for names within a certain "string distance"
+   char *bp;
+   const char *suggestions[16];
+   int   cur_sug = 0;
+   int   i;
+   const char *name = id->get_name();
+   LLScriptSymbol *symbol = id->get_symbol();
+   for ( i = 16; i--; )
+      suggestions[i] = NULL;
+
+   // try case insensitive
+   symbol = id->lookup_symbol( name, SYM_ANY, false );
+   if ( symbol != NULL )
+      suggestions[cur_sug++] = symbol->get_name();
+
+   if ( strstr(name, "To") ) {
+      // try replacing "To" with "2"
+      for (i = 0, bp = buffer; name[i]; i++) {
+         if ( (name[i] == 'T' || name[i] == 't') && (name[i+1] == 'O' || name[i+1] == 'o')) {
+            *bp++ = '2'; i++;
+         } else
+            *bp++ = name[i];
+      }
+      *bp = 0;
+      symbol = id->lookup_symbol( buffer, SYM_ANY, false );
+      if ( symbol != NULL )
+         suggestions[cur_sug++] = symbol->get_name();
+   }
+
+   // try replacing "2" with "To"
+   if ( strstr(name, "2") ) {
+      for (i = 0, bp = buffer; name[i]; i++) {
+         if ( name[i] == '2') {
+            *bp++ = 'T'; *bp++ = 'o';
+         } else
+            *bp++ = name[i];
+      }
+      *bp = 0;
+      symbol = id->lookup_symbol( buffer, SYM_ANY, false );
+      if ( symbol != NULL )
+         suggestions[cur_sug++] = symbol->get_name();
+   }
+
+   for (i = 0, buffer[0] = 0; suggestions[i] != NULL; i++ ) {
+      // add comma if not first
+      if ( i != 0 ) {
+         strncat(buffer, ", ",         BUFFER_SIZE);
+         // add "or" if not last
+         if ( suggestions[i+1] == NULL )
+            strncat(buffer, "or ",        BUFFER_SIZE);
+      }
+      strncat(buffer, "`",            BUFFER_SIZE);
+      strncat(buffer, suggestions[i], BUFFER_SIZE);
+      strncat(buffer, "'",            BUFFER_SIZE);
+   }
+}
+
 /// Identifiers should have their type/symbol set by their parent node, because they don't know what
 /// kind of symbol they represent by themselves. For example, this should work:
 //    string test() { return "hi"; }
@@ -396,15 +459,20 @@ void LLScriptExpression::determine_type() {
 //      integer test = 1;
 //      llOwnerSay(test());
 //    }
-//  But if "test" looked itself up, it would think it is an integer. It's parent function
-//  expression node can tell it what it needs to be before determining it's own type.
-void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
+//  But if "test" looked itself up, it would think it is an integer. Its parent function
+//  expression node can tell it what it needs to be before determining its own type.
+void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type, bool is_simple) {
+
 
    // If we already have a symbol, we don't need to look it up.
+   /*
+   // Should never happen: no reason to ever have visited this node
+   // before during this tree walk.
    if ( symbol != NULL ) {
       type = symbol->get_type();
       return;
    }
+   */
 
    // If it's a builtin, check for deprecation/godmode
    if ( symbol_type == SYM_FUNCTION ) {
@@ -436,9 +504,23 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
    // Look up the symbol with the requested type
    symbol = lookup_symbol( name, symbol_type );
 
-   if ( symbol == NULL ) {                        // no symbol of the right type
+   bool visible = true;
+
+   // At this point, we have all symbols defined, but some are not legal.
+   // Check the cases where we should report an error even if it already
+   // exists in the symbol table.
+   if ( symbol && symbol_type == SYM_VARIABLE && !symbol->was_declared()
+        && (!symbol->is_global() || is_simple) ) {
+      visible = false;
+   }
+
+   if ( symbol == NULL || !visible) {             // no symbol of the right type
       symbol = lookup_symbol( name, SYM_ANY );    // so try the wrong one, so we can have a more descriptive error message in that case.
-      if (symbol != NULL) {
+      if ( symbol && symbol_type == SYM_VARIABLE && !symbol->was_declared()
+         && (!symbol->is_global() || is_simple) ) {
+         visible = false;
+      }
+      if ( symbol != NULL && visible ) {
          if (symbol->get_symbol_type() == SYM_EVENT) {
             ERROR( HERE, E_WRONG_TYPE, name,
                   LLScriptSymbol::get_type_name(symbol_type),
@@ -450,61 +532,14 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
                    "", LLScriptSymbol::get_type_name(symbol->get_symbol_type()));
          }
       } else if (symbol_type != SYM_EVENT) { // if it's an event, don't report undefined identifier
-         // look for typos
-         // FIXME: this is mostly hacked together and unsafe (bp can overrun buffer, cur_sug can overrun suggestions)
-         // maybe a better way would be to go through all the symtabs looking for names within a certain "string distance"
          char buffer[BUFFER_SIZE+1];
-         char *bp;
-         const char *suggestions[16];
-         int   cur_sug = 0;
-         int   i;
-         for ( i = 16; i--; )
-            suggestions[i] = NULL;
+         buffer[0] = 0;
 
-         // try case insensitive
-         symbol = lookup_symbol( name, SYM_ANY, false );
-         if ( symbol != NULL )
-            suggestions[cur_sug++] = symbol->get_name();
-
-         if ( strstr(name, "To") ) {
-            // try replacing "To" with "2"
-            for (i = 0, bp = buffer; name[i]; i++) {
-               if ( (name[i] == 'T' || name[i] == 't') && (name[i+1] == 'O' || name[i+1] == 'o')) {
-                  *bp++ = '2'; i++;
-               } else
-                  *bp++ = name[i];
-            }
-            *bp = 0;
-            symbol = lookup_symbol( buffer, SYM_ANY, false );
-            if ( symbol != NULL )
-               suggestions[cur_sug++] = symbol->get_name();
-         }
-
-         // try replacing "2" with "To"
-         if ( strstr(name, "2") ) {
-            for (i = 0, bp = buffer; name[i]; i++) {
-               if ( name[i] == '2') {
-                  *bp++ = 'T'; *bp++ = 'o';
-               } else
-                  *bp++ = name[i];
-            }
-            *bp = 0;
-            symbol = lookup_symbol( buffer, SYM_ANY, false );
-            if ( symbol != NULL )
-               suggestions[cur_sug++] = symbol->get_name();
-         }
-
-         for (i = 0, buffer[0] = 0; suggestions[i] != NULL; i++ ) {
-            // add comma if not first
-            if ( i != 0 ) {
-               strncat(buffer, ", ",         BUFFER_SIZE);
-               // add "or" if not last
-               if ( suggestions[i+1] == NULL )
-                  strncat(buffer, "or ",        BUFFER_SIZE);
-            }
-            strncat(buffer, "`",            BUFFER_SIZE);
-            strncat(buffer, suggestions[i], BUFFER_SIZE);
-            strncat(buffer, "'",            BUFFER_SIZE);
+         // check that the symbol really does not exist,
+         // otherwise we get: "x is undeclared, did you mean x?"
+         // for symbols that already exist but are not visible
+         if (!symbol) {
+            find_suggestions(this, buffer);
          }
          if ( buffer[0] == 0 ) {
             ERROR( HERE, E_UNDECLARED, name );
@@ -529,7 +564,7 @@ void LLScriptIdentifier::resolve_symbol(LLSymbolType symbol_type) {
          return;
       }
 
-      /// Make sure it's a variable
+      // Make sure it's a variable
       if ( symbol_type != SYM_VARIABLE ) {
          ERROR( HERE, E_MEMBER_NOT_VARIABLE, name, member, LLScriptSymbol::get_type_name(symbol_type));
          symbol = NULL;
@@ -583,7 +618,7 @@ void LLScriptSimpleAssignable::determine_type() {
 
    if ( node->get_node_type() == NODE_IDENTIFIER ) {
       LLScriptIdentifier *id = (LLScriptIdentifier *) node;
-      id->resolve_symbol( SYM_VARIABLE );
+      id->resolve_symbol( SYM_VARIABLE, true );
       type = id->get_type();
    } else if ( node->get_node_type() == NODE_CONSTANT ) {
       type = node->get_type();
@@ -728,6 +763,7 @@ void LLScriptJumpStatement::determine_type() {
 
 void LLScriptGlobalVariable::determine_type() {
    LLScriptIdentifier *id = (LLScriptIdentifier *) get_child(0);
+   if ( id->get_symbol() ) id->get_symbol()->set_declared();
    LLASTNode *node = get_child(1);
    if ( node == NULL || node->get_node_type() == NODE_NULL ) return;
    if ( !node->get_type()->can_coerce(id->get_type()) ) {
@@ -739,6 +775,7 @@ void LLScriptGlobalVariable::determine_type() {
 void LLScriptDeclaration::determine_type() {
    LLScriptIdentifier *id = (LLScriptIdentifier *) get_child(0);
    LLASTNode *node = get_child(1);
+   if ( id->get_symbol() ) id->get_symbol()->set_declared();
    if ( node == NULL || node->get_node_type() == NODE_NULL ) return;
    if ( !node->get_type()->can_coerce(id->get_type()) ) {
       ERROR( HERE, E_WRONG_TYPE_IN_ASSIGNMENT, id->get_type()->get_node_name(),
@@ -852,7 +889,7 @@ void LLASTNode::check_symbols() {
 }
 
 
-void usage(char *name) {
+void usage(const char *name) {
    printf("Usage: %s [options] [input]\n", name);
    printf("Options: \n");
    printf("\t-m\t\tFlag: Use Mono rules for the analysis (default on)\n");
@@ -929,7 +966,7 @@ int yylex_init( void ** );
 void yyset_in( FILE *, void *);
 int yylex_destroy( void *) ;
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
    int i, j;
    FILE *yyin = NULL;
    bool show_tree = false;
@@ -946,7 +983,7 @@ int main(int argc, char **argv) {
    // HACK: Parse long options before anything else.
    for ( i = 1; i < argc; ++i ) {
       if (argv[i][0] == '-' && argv[i][1] == '-') {
-         char *optiontext = argv[i] + 2;
+         const char *optiontext = argv[i] + 2;
          if ( !strcmp(optiontext, "version") ) {
             short_version();
             return 0;
@@ -1077,12 +1114,12 @@ nextarg:
       }
 
       LOG(LOG_INFO, NULL, "Script parsed, collecting symbols");
-      script->collect_symbols();
+      script->collect_symbols();    // in this file
       LOG(LOG_INFO, NULL, "Propagating types");
-      script->propagate_types();
-      script->propagate_values();
-      script->check_symbols();
-      script->final_pre_walk();
+      script->propagate_types();    // in this file
+      script->propagate_values();   // in values.cc
+      script->check_symbols();      // in this file, calls symtab.cc
+      script->final_walk();         // in final_walk.cc
       Logger::get()->report();
       if ( show_tree ) {
          LOG(LOG_INFO, NULL, "Tree:");
