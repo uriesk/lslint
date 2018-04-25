@@ -211,6 +211,29 @@ class LLScriptStringConstant : public LLScriptConstant {
 
 
 /////////////////////////////////////////////////////
+// Key Constant
+
+class LLScriptKeyConstant : public LLScriptConstant {
+  public:
+    LLScriptKeyConstant( const char *v ) : LLScriptConstant(), value(v) { type = TYPE(LST_KEY); }
+
+    virtual const char *get_node_name() {
+      static char buf[256];
+      sprintf(buf, "key constant: `%s'", value);
+      return (const char *)buf;
+    }
+
+    virtual LLNodeSubType get_node_sub_type() { return NODE_KEY_CONSTANT; }
+
+    const char *get_value() { return value; }
+    virtual LLScriptConstant *operation(int op, LLScriptConstant *other_const, YYLTYPE *lloc);
+
+  private:
+    const char *value;
+};
+
+
+/////////////////////////////////////////////////////
 // List Constant
 
 class LLScriptListConstant : public LLScriptConstant {

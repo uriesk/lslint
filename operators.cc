@@ -8,7 +8,7 @@ LLScriptConstant *LLScriptIntegerConstant::operation(int operation, LLScriptCons
       int nv;
       switch (operation) {
          case INC_OP:  nv = value + 1; break;
-         case DEC_OP:  nv = value - 1; break; 
+         case DEC_OP:  nv = value - 1; break;
          case '!':     nv = !value;    break;
          case '~':     nv = ~value;    break;
          case '-':     nv = -value;    break;
@@ -72,7 +72,7 @@ LLScriptConstant *LLScriptFloatConstant::operation(int operation, LLScriptConsta
       float nv;
       switch (operation) {
          case INC_OP:  nv = value + 1; break;
-         case DEC_OP:  nv = value - 1; break; 
+         case DEC_OP:  nv = value - 1; break;
          case '-':     nv = -value;    break;
          default:      return NULL;
       }
@@ -127,6 +127,10 @@ inline const char *join_string( const char *left, const char *right ) {
    strcpy( ns, left );
    strcat( ns, right );
    return (const char *)ns;
+}
+
+LLScriptConstant *LLScriptKeyConstant::operation(int operation, LLScriptConstant *other_const, YYLTYPE *lloc) {
+   return NULL;
 }
 
 LLScriptConstant *LLScriptStringConstant::operation(int operation, LLScriptConstant *other_const, YYLTYPE *lloc) {
