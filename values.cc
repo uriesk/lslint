@@ -45,7 +45,28 @@ void LLScriptDeclaration::determine_value() {
       return;
    }
    DEBUG( LOG_DEBUG_SPAM, NULL, "set %s const to %p\n", id->get_name(), node->get_constant_value() );
-   id->get_symbol()->set_constant_value( node->get_constant_value() );
+   if ( id->get_type()->get_itype() == node->get_type()->get_itype() ) {
+      id->get_symbol()->set_constant_value( node->get_constant_value() );
+   } else {
+      // Handle implicit casts
+      LLScriptConstant *value = node->get_constant_value();
+      if (!value) return;
+      switch( id->get_type()->get_itype() ) {
+         case LST_STRING:
+            if ( value->get_type()->get_itype() == LST_KEY )
+               id->get_symbol()->set_constant_value( new LLScriptStringConstant( ((LLScriptKeyConstant *)value)->get_value() ) );
+            break;
+         case LST_KEY:
+            if ( value->get_type()->get_itype() == LST_STRING )
+               id->get_symbol()->set_constant_value( new LLScriptKeyConstant( ((LLScriptStringConstant *)value)->get_value() ) );
+            break;
+         case LST_FLOATINGPOINT:
+            if ( value->get_type()->get_itype() == LST_INTEGER )
+               id->get_symbol()->set_constant_value( new LLScriptFloatConstant( (float)((LLScriptIntegerConstant *)value)->get_value() ) );
+            break;
+         default: break;
+      }
+   }
 }
 
 void LLScriptExpression::determine_value() {
@@ -79,9 +100,34 @@ void LLScriptExpression::determine_value() {
 
 void LLScriptGlobalVariable::determine_value() {
    // ensure the symbol receives the constant value
-   if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE )
-      ((LLScriptIdentifier *)get_child(0))->get_symbol()->set_constant_value(get_child(1)->get_constant_value());
-   else {
+   if ( get_child(1)->get_node_type() == NODE_SIMPLE_ASSIGNABLE ) {
+      // Handle automatic type casts
+      LLScriptIdentifier *id = (LLScriptIdentifier *)get_child(0);
+      LLScriptSimpleAssignable *node = (LLScriptSimpleAssignable *)get_child(1);
+
+      if ( id->get_type()->get_itype() == node->get_type()->get_itype() ) {
+         id->get_symbol()->set_constant_value( node->get_constant_value() );
+      } else {
+         // Handle implicit casts
+         LLScriptConstant *value = node->get_constant_value();
+         if (!value) return;
+         switch( id->get_type()->get_itype() ) {
+            case LST_STRING:
+               if ( value->get_type()->get_itype() == LST_KEY )
+                  id->get_symbol()->set_constant_value( new LLScriptStringConstant( ((LLScriptKeyConstant *)value)->get_value() ) );
+               break;
+            case LST_KEY:
+               if ( value->get_type()->get_itype() == LST_STRING )
+                  id->get_symbol()->set_constant_value( new LLScriptKeyConstant( ((LLScriptStringConstant *)value)->get_value() ) );
+               break;
+            case LST_FLOATINGPOINT:
+               if ( value->get_type()->get_itype() == LST_INTEGER )
+                  id->get_symbol()->set_constant_value( new LLScriptFloatConstant( (float)((LLScriptIntegerConstant *)value)->get_value() ) );
+               break;
+            default: break;
+         }
+      }
+   } else {
       // assign a default value to the symbol
       LLScriptConstant *value;
       switch(get_child(0)->get_type()->get_itype()) {
