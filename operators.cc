@@ -130,7 +130,42 @@ inline const char *join_string( const char *left, const char *right ) {
 }
 
 LLScriptConstant *LLScriptKeyConstant::operation(int operation, LLScriptConstant *other_const, YYLTYPE *lloc) {
-   return NULL;
+   if ( other_const == NULL ) {
+      return NULL;
+   }
+
+   // binary op
+   switch (other_const->get_node_sub_type()) {
+      case NODE_KEY_CONSTANT: {
+                                 const char *ov = ((LLScriptKeyConstant*)other_const)->get_value();
+                                 switch (operation) {
+                                    case EQ:  return new LLScriptIntegerConstant( !strcmp(value, ov) );
+                                    case NEQ:
+                                       {
+                                          int tmp = strcmp(value, ov);
+                                          if (mono_mode) return new LLScriptIntegerConstant( !!tmp );
+                                          return new LLScriptIntegerConstant( (tmp > 0) - (tmp < 0) );
+                                       }
+                                    default:  return NULL;
+                                 }
+                              }
+      case NODE_STRING_CONSTANT: {
+                                    const char *ov = ((LLScriptStringConstant*)other_const)->get_value();
+                                    switch (operation) {
+                                       case '+':           return new LLScriptStringConstant( join_string(value, ov) );
+                                       case EQ:            return new LLScriptIntegerConstant( !strcmp(value, ov) );
+                                       case NEQ:
+                                          {
+                                             int tmp = strcmp(value, ov);
+                                             if (mono_mode) return new LLScriptIntegerConstant( !!tmp );
+                                             return new LLScriptIntegerConstant( (tmp > 0) - (tmp < 0) );
+                                          }
+                                       default:            return NULL;
+                                    }
+                                 }
+      default:
+                                 return NULL;
+   }
 }
 
 LLScriptConstant *LLScriptStringConstant::operation(int operation, LLScriptConstant *other_const, YYLTYPE *lloc) {
@@ -141,6 +176,19 @@ LLScriptConstant *LLScriptStringConstant::operation(int operation, LLScriptConst
 
    // binary op
    switch (other_const->get_node_sub_type()) {
+      case NODE_KEY_CONSTANT: {
+                                 const char *ov = ((LLScriptKeyConstant*)other_const)->get_value();
+                                 switch (operation) {
+                                    case EQ:  return new LLScriptIntegerConstant( !strcmp(value, ov) );
+                                    case NEQ:
+                                       {
+                                          int tmp = strcmp(value, ov);
+                                          if (mono_mode) return new LLScriptIntegerConstant( !!tmp );
+                                          return new LLScriptIntegerConstant( (tmp > 0) - (tmp < 0) );
+                                       }
+                                    default:  return NULL;
+                                 }
+                              }
       case NODE_STRING_CONSTANT: {
                                     const char *ov = ((LLScriptStringConstant*)other_const)->get_value();
                                     switch (operation) {
@@ -148,8 +196,8 @@ LLScriptConstant *LLScriptStringConstant::operation(int operation, LLScriptConst
                                        case EQ:            return new LLScriptIntegerConstant( !strcmp(value, ov) );
                                        case NEQ:
                                           {
-                                             if (mono_mode) return new LLScriptIntegerConstant( !!strcmp(value, ov) );
                                              int tmp = strcmp(value, ov);
+                                             if (mono_mode) return new LLScriptIntegerConstant( !!tmp );
                                              return new LLScriptIntegerConstant( (tmp > 0) - (tmp < 0) );
                                           }
                                        default:            return NULL;

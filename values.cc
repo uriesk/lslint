@@ -72,7 +72,7 @@ void LLScriptGlobalVariable::determine_value() {
       switch(get_child(0)->get_type()->get_itype()) {
          case LST_INTEGER:       value = new LLScriptIntegerConstant(0); break;
          case LST_FLOATINGPOINT: value = new LLScriptFloatConstant(0.0f); break;
-         case LST_KEY:           // fall through
+         case LST_KEY:           value = new LLScriptKeyConstant(""); break;
          case LST_STRING:        value = new LLScriptStringConstant(""); break;
          case LST_VECTOR:        value = new LLScriptVectorConstant(0.f, 0.f, 0.f); break;
          case LST_QUATERNION:    value = new LLScriptQuaternionConstant(0.f, 0.f, 0.f, 1.f); break;
