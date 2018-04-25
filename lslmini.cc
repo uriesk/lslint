@@ -312,6 +312,29 @@ void LLScriptLabel::define_symbols() {
    LLScriptIdentifier    *identifier = (LLScriptIdentifier*)get_children();
    identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_LABEL, SYM_LOCAL, identifier->get_lloc()) );
    define_symbol( identifier->get_symbol() );
+   // Define it also in the function or event if it does not exist
+   LLASTNode *fn = get_parent();
+   while (fn && fn->get_node_type() != NODE_GLOBAL_FUNCTION && fn->get_node_type() != NODE_EVENT_HANDLER) {
+      fn = fn->get_parent();
+   }
+   if (!fn) {
+      printf("Label not inside a function or event - this should not happen!");
+      exit(1);
+   }
+   LabelMap *labels;
+   if (fn->get_node_type() == NODE_GLOBAL_FUNCTION)
+      labels = &((LLScriptGlobalFunction *)fn)->labels;
+   else
+      labels = &((LLScriptEventHandler *)fn)->labels;
+   std::string label = std::string(identifier->get_name());
+   if (labels->find(label) != labels->end()) {
+      if (mono_mode)
+         ERROR( IN(identifier), E_DUPLICATE_LABEL_MONO, identifier->get_name() );
+      else
+         ERROR( IN(identifier), W_DUPLICATE_LABEL_LSO, identifier->get_name() );
+   } else {
+      labels->insert(label);
+   }
 }
 
 // walk tree post-order and propagate types

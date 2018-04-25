@@ -6,6 +6,8 @@
 #include <string.h>
 #include <ctype.h> // isprint()
 #include <cstdarg>
+#include <set>
+#include <string>
 
 typedef int   S32;
 typedef float F32;
@@ -47,6 +49,7 @@ class LLQuaternion {
     float x, y, z, s;
 };
 
+typedef std::set<std::string> LabelMap;
 
 class LLScriptScript : public LLASTNode {
   public:
@@ -346,6 +349,7 @@ class LLScriptGlobalFunction : public LLASTNode {
     virtual const char *get_node_name() { return "global func"; }
     virtual LLNodeType get_node_type() { return NODE_GLOBAL_FUNCTION; };
     virtual void final_pre_checks();
+    LabelMap labels;
 };
 
 class LLScriptFunctionDec : public LLASTNode {
@@ -384,6 +388,7 @@ class LLScriptEventHandler : public LLASTNode {
     virtual const char *get_node_name() { return "event handler"; }
     virtual LLNodeType get_node_type() { return NODE_EVENT_HANDLER; };
     virtual void final_pre_checks();
+    LabelMap labels;
 };
 
 class LLScriptStatement : public LLASTNode {
