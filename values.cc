@@ -28,7 +28,22 @@ void LLASTNode::determine_value() {
 void LLScriptDeclaration::determine_value() {
    LLScriptIdentifier *id = (LLScriptIdentifier *) get_child(0);
    LLASTNode *node = get_child(1);
-   if ( node == NULL || node->get_node_type() == NODE_NULL ) return;
+   if ( node == NULL || node->get_node_type() == NODE_NULL ) {
+      // assign a default value to the symbol
+      LLScriptConstant *value;
+      switch(get_child(0)->get_type()->get_itype()) {
+         case LST_INTEGER:       value = new LLScriptIntegerConstant(0); break;
+         case LST_FLOATINGPOINT: value = new LLScriptFloatConstant(0.0f); break;
+         case LST_KEY:           value = new LLScriptKeyConstant(""); break;
+         case LST_STRING:        value = new LLScriptStringConstant(""); break;
+         case LST_VECTOR:        value = new LLScriptVectorConstant(0.f, 0.f, 0.f); break;
+         case LST_QUATERNION:    value = new LLScriptQuaternionConstant(0.f, 0.f, 0.f, 1.f); break;
+         case LST_LIST:          value = new LLScriptListConstant((LLScriptSimpleAssignable *)NULL); break;
+         default:                fprintf(stderr, "Impossible"); exit(EXIT_FAILURE);
+      }
+      ((LLScriptIdentifier *)get_child(0))->get_symbol()->set_constant_value(value);
+      return;
+   }
    DEBUG( LOG_DEBUG_SPAM, NULL, "set %s const to %p\n", id->get_name(), node->get_constant_value() );
    id->get_symbol()->set_constant_value( node->get_constant_value() );
 }
