@@ -308,17 +308,6 @@ void LLScriptEventDec::define_symbols() {
    }
 }
 
-void LLScriptEvent::define_symbols() {
-   LLScriptIdentifier    *identifier;
-   LLASTNode             *node = get_children();
-   while (node) {
-      identifier = (LLScriptIdentifier *)node;
-      identifier->set_symbol( new LLScriptSymbol( identifier->get_name(), identifier->get_type(), SYM_VARIABLE, SYM_EVENT_PARAMETER, node->get_lloc() ) );
-      define_symbol( identifier->get_symbol() );
-      node = node->get_next();
-   }
-}
-
 void LLScriptLabel::define_symbols() {
    LLScriptIdentifier    *identifier = (LLScriptIdentifier*)get_children();
    identifier->set_symbol( new LLScriptSymbol(identifier->get_name(), identifier->get_type(), SYM_LABEL, SYM_LOCAL, identifier->get_lloc()) );

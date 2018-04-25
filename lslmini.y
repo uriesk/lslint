@@ -9,8 +9,6 @@
 	LLScriptScript *script;
 	int yyerror( YYLTYPE*, void *, const char * );
 	#define MAKEID(type,id,pos) new LLScriptIdentifier(TYPE(type), (id), &(pos))
-	#define EVENTERR(type,prototype) new LLScriptEvent((type), 0); LOG( LOG_CONTINUE, NULL, "event prototype must match: " # prototype);
-
 
 	#define LSLINT_STACK_OVERFLOW_AT 150
 	inline int _yylex( YYSTYPE * yylval, YYLTYPE *yylloc, void *yyscanner, int stack ) {
@@ -49,7 +47,6 @@
 	class LLScriptIdentifier		*identifier;
 	class LLScriptSimpleAssignable	*assignable;
 	class LLScriptGlobalVariable	*global;
-	class LLScriptEvent				*event;
 	class LLScriptEventHandler		*handler;
 	class LLScriptExpression		*expression;
 	class LLScriptStatement			*statement;

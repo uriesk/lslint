@@ -386,20 +386,6 @@ class LLScriptEventHandler : public LLASTNode {
     virtual void final_pre_checks();
 };
 
-class LLScriptEvent : public LLASTNode {
-  public:
-    LLScriptEvent(int num, ...) {
-      va_list ap;
-      va_start(ap, num);
-      add_children(num, ap);
-      va_end(ap);
-     };
-
-    virtual void define_symbols();
-    virtual const char *get_node_name() { return "event"; }
-    virtual LLNodeType get_node_type() { return NODE_EVENT; };
-};
-
 class LLScriptStatement : public LLASTNode {
   public:
     LLScriptStatement( int num, ... ) {
