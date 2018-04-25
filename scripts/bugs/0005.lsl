@@ -9,11 +9,11 @@ default {
     state_entry() {
         list l;
         list j = [];
-        if ( l == [] )
+        if ( l == [] ) // $[E20011] always true
             a++;
-        if ( [] == l )
+        if ( [] == l ) // $[E20011] always true
             a++;
-        if ( l == j )
+        if ( l == j )  // $[E20011] always true
             a++;
     }
 }
