@@ -81,5 +81,8 @@ default {
       if (["", ""]) 0;            // $[E20011] true
 
       if ("\t\t\t\t\t\t" == "                        ") 0; // $[E20011] true
+
+      if ((list)x == [""]) 0;     // $[E20010] only length $[E20011] true
+      if ((list)x != [""]) 0;     // $[E20010] only length $[E20012] false
    }
 }

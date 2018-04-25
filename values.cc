@@ -334,3 +334,88 @@ void LLScriptQuaternionExpression::determine_value() {
    constant_value = new LLScriptQuaternionConstant( v[0], v[1], v[2], v[3] );
 
 }
+
+void LLScriptTypecastExpression::determine_value() {
+   LLASTNode                 *node       = get_children();
+   LLScriptConstant          *value;
+
+   if ( constant_value != NULL || !node->is_constant() )
+      return;
+
+   value = node->get_constant_value();
+   // Type cast of a type to itself is a NOP
+   if ( value->get_type()->get_itype() == type->get_itype() ) {
+      constant_value = value;
+      return;
+   }
+
+   // (list)x generates a list of 1 element for all types except list (handled above)
+   if ( type->get_itype() == LST_LIST ) {
+      LLScriptSimpleAssignable *element = new LLScriptSimpleAssignable(value);
+      constant_value = new LLScriptListConstant(element);
+      return;
+   }
+
+   // Perform the type cast in the rest of cases
+   switch( type->get_itype() ) {
+      case LST_KEY:
+         switch( value->get_type()->get_itype() ) {
+            case LST_STRING:    constant_value = new LLScriptKeyConstant(((LLScriptStringConstant*)value)->get_value()); break;
+            default:            break;
+         }
+         break;
+      case LST_STRING:
+         switch( value->get_type()->get_itype() ) {
+            case LST_KEY:       constant_value = new LLScriptStringConstant(((LLScriptKeyConstant*)value)->get_value()); break;
+            case LST_INTEGER:
+               {
+                  char *buf = new char[11];
+                  sprintf(buf, "%d", ((LLScriptIntegerConstant*)value)->get_value());
+                  constant_value = new LLScriptStringConstant(buf);
+                  break;
+               }
+            case LST_FLOATINGPOINT:
+               {
+                  char *buf = new char[48];
+                  float f = ((LLScriptFloatConstant*)value)->get_value();
+                  if (f == f + f) {
+                     if (mono_mode)
+                        strcpy( buf, f > 0 ? "Infinity" : "-Infinity" );
+                     else {
+                        // TODO: Implement this error
+                        //ERROR( HERE, E_INFINITE_CONSTANT );
+                        sprintf(buf, "%f", f);
+                     }
+                  } else if (mono_mode) {
+                     // Mono float to string conversion not implemented
+                     delete buf;
+                     break;
+                  } else {
+                     sprintf(buf, "%f", f);
+                  }
+                  constant_value = new LLScriptStringConstant(buf);
+                  break;
+               }
+            case LST_VECTOR:
+            case LST_QUATERNION:
+               // TODO; for now, fall back
+            default:            break;
+         }
+         break;
+      case LST_FLOATINGPOINT:
+         switch( value->get_type()->get_itype() ) {
+            case LST_INTEGER:   constant_value = new LLScriptFloatConstant((float)(((LLScriptIntegerConstant*)value)->get_value())); break;
+            case LST_STRING:
+               // TODO; for now, fall back
+            default:            break;
+         }
+      case LST_INTEGER:
+         // TODO; for now, fall back
+      case LST_VECTOR:
+         // TODO; for now, fall back
+      case LST_QUATERNION:
+         // TODO; for now, fall back
+      default:
+         break;
+   }
+}
