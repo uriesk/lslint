@@ -57,6 +57,17 @@ void LLScriptGlobalFunction::final_pre_checks() {
    }
 }
 
+static bool isKey(const char *value) {
+   if (strlen(value) != 36 || value[8] != '-' || value[13] != '-' || value[18] != '-' || value[23] != '-')
+      return false;
+
+   char buf[37];
+   strcpy(buf, value);
+   // change dashes to valid letters, and check the whole string
+   buf[8] = 'A'; buf[13] = 'A'; buf[18] = 'A'; buf[23] = 'A';
+   return strspn(buf, "0123456789ABCDEFabcdef") == 36;
+}
+
 void check_cond(LLScriptExpression *expr, bool warn_if_true) {
    // see if expression is constant
    if ( expr->get_constant_value() != NULL ) {
@@ -68,7 +79,9 @@ void check_cond(LLScriptExpression *expr, bool warn_if_true) {
          truth = ((LLScriptFloatConstant*)expr->get_constant_value())->get_value() != 0.f;
       } else if ( type == NODE_STRING_CONSTANT ) {
          truth = ((LLScriptStringConstant*)expr->get_constant_value())->get_value()[0] != 0;
-      // TODO: key constants?
+      } else if ( type == NODE_KEY_CONSTANT) {
+         const char *value = ((LLScriptKeyConstant*)expr->get_constant_value())->get_value();
+         truth = value && isKey(value) && strcmp(value, "00000000-0000-0000-0000-000000000000");
       } else if ( type == NODE_VECTOR_CONSTANT ) {
          LLVector *value = ((LLScriptVectorConstant*)expr->get_constant_value())->get_value();
          truth = value->x != 0.f || value->y != 0.f || value->z != 0.f;
