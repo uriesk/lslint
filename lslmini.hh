@@ -176,7 +176,7 @@ class LLScriptFloatConstant : public LLScriptConstant {
 
     virtual const char *get_node_name() {
       static char buf[256];
-      sprintf(buf, "float constant: %f", value);
+      sprintf(buf, "float constant: %.9g", value);
       return (const char *)buf;
     }
 
