@@ -285,6 +285,8 @@ const char *Logger::error_messages[] = {
    "Declaration needs braces {}.",                                    // 10036
    "`%s' requires god mode. Use lslint -G to enable god mode.",       // 10037
    "Lists can't contain lists.",                                      // 10038
+   "Label `%s' already defined in this function or event prevents saving"
+      " the program",                                                 // 10039
 
 };
 
@@ -318,5 +320,8 @@ const char *Logger::warning_messages[] = {
      "to be inserted at the beginning of the string.",                // 20019
    "print does nothing. Attempting to use the result %s.\n",          // 20020
    "In LSO, (list)%s_var can result in a variable of type %s in the list."
-     " Use [%s_var] instead.",                                      // 20021
+     " Use [%s_var] instead.",                                        // 20021
+   "Label `%s' already defined in this function or event may cause"
+      " unexpected behaviour (jumps will go to the last label found)",// 20022
+
 };
