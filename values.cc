@@ -1,5 +1,10 @@
 #include "lslmini.hh"
 
+// 1 sign + 39 digits + 1 point + 6 decimals
+#define FLOAT_AS_STR_MAX_LENGTH (1 + 39 + 1 + 6)
+// 1 "<" + 4 floats + 3 ", " separators + 1 ">"
+#define QUAT_AS_STR_MAX_LENGTH (1 + FLOAT_AS_STR_MAX_LENGTH*4 + 3*2 + 1)
+
 void LLASTNode::propagate_values() {
    LLASTNode             *node = get_children();
    if ( node != NULL ) {
@@ -381,6 +386,105 @@ void LLScriptQuaternionExpression::determine_value() {
 
 }
 
+static void float_to_str(float f, char *s, int *n, int dp) {
+   if (dp > 6) {
+      printf("No more than 6 decimal places supported");
+      exit(1);
+   }
+   if (mono_mode && f != 0.0f) {
+      if (f == f + f) {
+         *n = sprintf(s, "%s", f > 0 ? "Infinity" : "-Infinity");
+      } else if (f != f) {
+         *n = sprintf(s, "%s", "NaN");
+      } else {
+         // Mono float to string conversion, 7 significant digits + rounding.
+         // Uses 7 extra decimal places to determine rounding in addition to
+         // the requested digits.
+         char buf[FLOAT_AS_STR_MAX_LENGTH + 7 + 1];
+         int len = sprintf(buf, "%.*f", dp + 7, f);
+         if (!strncmp(buf, dp == 5 ? "-0.00000" : "-0.000000", dp + 3) && buf[dp + 3] < '5') {
+            // Underflown nonzero negative floats return positive zero
+            *n = sprintf(s, "%.*f", dp, 0.0f);
+         } else {
+            int sgn = buf[0] == '-';
+            int i = sgn;
+            int digits = 0;
+
+            if (sgn) s[0] = '-';
+
+            // Search for first nonzero from the left
+            while (buf[i] == '0' || buf[i] == '.') ++i;
+            // Count 7 significant digits, or stop after dp digits after the period
+            for ( i = sgn; i < len - 7; i++ ) {
+               if (digits == 7)
+                  break;
+               digits += buf[i] != '.';
+            }
+            // 'i' is now our rounding point. Check if rounding must be applied.
+            int roundidx = buf[i + (buf[i] == '.')] < '5' ? 0 : i;
+
+            // Clear all digits starting here
+            for ( ; i < len - 7; i++ ) {
+               if (buf[i] != '.') buf[i] = '0';
+            }
+            if (roundidx) {
+               // Rounding needed - increment
+               for ( i = roundidx - 1; i >= sgn; i-- ) {
+                  if (buf[i] != '.') {
+                     if (buf[i] == '9') buf[i] = '0'; else { buf[i]++; break; }
+                  }
+               }
+            }
+            // i < sgn means the carry propagated all the way to the first
+            // digit and we have to expand the number to fit an extra '1'
+            s[sgn] = '1'; // store a leading '1' - will be overwritten if no carry
+            *n = (i < sgn) + len - 7;
+            strncpy(&s[sgn + (i < sgn)], &buf[sgn], len - 7 - sgn);
+            s[*n] = 0;
+         }
+      }
+   } else {
+      *n = sprintf(s, "%.*f", dp, f);
+   }
+   if ( *n > FLOAT_AS_STR_MAX_LENGTH ) {
+      printf("Oopsie! We've overflown the buffer!");
+      abort(); // PANIC!
+   }
+}
+
+static void get_vq_as_string(LLScriptConstant *value, char *buf, int dp)
+{
+   char *s = buf;
+   int length;
+   int n_elements;
+   float f[4];
+   if ( value->get_type()->get_itype() == LST_VECTOR ) {
+      n_elements = 3;
+      LLVector *v = ((LLScriptVectorConstant*)value)->get_value();
+      f[0] = v->x;
+      f[1] = v->y;
+      f[2] = v->z;
+   } else {
+      n_elements = 4;
+      LLQuaternion *q = ((LLScriptQuaternionConstant*)value)->get_value();
+      f[0] = q->x;
+      f[1] = q->y;
+      f[2] = q->z;
+      f[3] = q->s;
+   }
+   *s++ = '<';
+   for ( int i = 0; i < n_elements; i++ ) {
+      if (i) {
+         *s++ = ',';
+         *s++ = ' ';
+      }
+      float_to_str(f[i], s, &length, dp);
+      s += length;
+   }
+   *s++ = '>';
+   *s = 0;
+}
+
 void LLScriptTypecastExpression::determine_value() {
    LLASTNode                 *node       = get_children();
    LLScriptConstant          *value;
@@ -406,61 +510,190 @@ void LLScriptTypecastExpression::determine_value() {
    switch( type->get_itype() ) {
       case LST_KEY:
          switch( value->get_type()->get_itype() ) {
-            case LST_STRING:    constant_value = new LLScriptKeyConstant(((LLScriptStringConstant*)value)->get_value()); break;
-            default:            break;
+            case LST_STRING:
+               constant_value = new LLScriptKeyConstant(((LLScriptStringConstant*)value)->get_value());
+               break;
+            default:
+               break;
          }
          break;
       case LST_STRING:
          switch( value->get_type()->get_itype() ) {
-            case LST_KEY:       constant_value = new LLScriptStringConstant(((LLScriptKeyConstant*)value)->get_value()); break;
+            case LST_KEY:
+               constant_value = new LLScriptStringConstant(((LLScriptKeyConstant*)value)->get_value());
+               break;
             case LST_INTEGER:
                {
                   char *buf = new char[11];
                   sprintf(buf, "%d", ((LLScriptIntegerConstant*)value)->get_value());
                   constant_value = new LLScriptStringConstant(buf);
-                  break;
                }
+               break;
             case LST_FLOATINGPOINT:
                {
-                  char *buf = new char[48];
+                  // max length = 1 minus sign, 39 digits, 1 point, 6 decimals, 1 null
+                  char buf[FLOAT_AS_STR_MAX_LENGTH + 1];
                   float f = ((LLScriptFloatConstant*)value)->get_value();
-                  if (f == f + f) {
-                     if (mono_mode)
-                        strcpy( buf, f > 0 ? "Infinity" : "-Infinity" );
-                     else {
-                        // TODO: Implement this error
-                        //ERROR( HERE, E_INFINITE_CONSTANT );
-                        sprintf(buf, "%f", f);
-                     }
-                  } else if (mono_mode) {
-                     // Mono float to string conversion not implemented
-                     delete buf;
-                     break;
-                  } else {
-                     sprintf(buf, "%f", f);
-                  }
-                  constant_value = new LLScriptStringConstant(buf);
-                  break;
+                  int length;
+                  float_to_str(f, buf, &length, 6);
+                  char *s = new char[length + 1];
+                  strcpy(s, buf);
+                  constant_value = new LLScriptStringConstant(s);
                }
+               break;
             case LST_VECTOR:
             case LST_QUATERNION:
-               // TODO; for now, fall back
-            default:            break;
+               {
+                  char buf[QUAT_AS_STR_MAX_LENGTH + 1];
+                  get_vq_as_string(value, buf, 5);
+                  char *s = new char[strlen(buf) + 1];
+                  strcpy(s, buf);
+                  constant_value = new LLScriptStringConstant(s);
+               }
+               break;
+            case LST_LIST:
+               {
+                  LLScriptSimpleAssignable *element;
+                  std::string result;
+                  char buf[QUAT_AS_STR_MAX_LENGTH + 1];
+                  for ( element = ((LLScriptListConstant*)value)->get_value(); element; element = (LLScriptSimpleAssignable*)element->get_next() ) {
+                     LLScriptConstant *lv = element->get_children()->get_constant_value();
+                     if ( !lv ) return;
+                     switch( lv->get_type()->get_itype() ) {
+                        case LST_INTEGER:
+                           {
+                              sprintf(buf, "%d", ((LLScriptIntegerConstant*)lv)->get_value());
+                              result.append(buf);
+                           }
+                           break;
+                        case LST_FLOATINGPOINT:
+                           {
+                              float f = ((LLScriptFloatConstant*)lv)->get_value();
+                              int length;
+                              float_to_str(f, buf, &length, 6);
+                              result.append(buf);
+                           }
+                           break;
+                        case LST_VECTOR:
+                        case LST_QUATERNION:
+                           {
+                              get_vq_as_string(lv, buf, 6);
+                              result.append(buf);
+                           }
+                           break;
+                        case LST_STRING:
+                           result.append(((LLScriptStringConstant*)lv)->get_value());
+                           break;
+                        case LST_KEY:
+                           result.append(((LLScriptKeyConstant*)lv)->get_value());
+                           break;
+                        default:
+                           break;
+                     }
+                  }
+                  char *s = new char[result.length() + 1];
+                  strcpy(s, result.c_str());
+                  constant_value = new LLScriptStringConstant(s);
+               }
+               break;
+            default:
+               break;
          }
          break;
       case LST_FLOATINGPOINT:
          switch( value->get_type()->get_itype() ) {
-            case LST_INTEGER:   constant_value = new LLScriptFloatConstant((float)(((LLScriptIntegerConstant*)value)->get_value())); break;
+            case LST_INTEGER:
+               constant_value = new LLScriptFloatConstant((float)(((LLScriptIntegerConstant*)value)->get_value()));
+               break;
             case LST_STRING:
-               // TODO; for now, fall back
-            default:            break;
+               {
+                  double d;
+                  float f = 0.0f;
+                  sscanf( ((LLScriptStringConstant *)value)->get_value(), "%lf", &d );
+                  f = (float)d;
+                  if (mono_mode && (d > -1.1754943157898259e-38 && d < 1.1754943157898259e-38))
+                     f = 0.0f;
+                  constant_value = new LLScriptFloatConstant(f);
+               }
+               break;
+            default:
+               break;
          }
+         break;
       case LST_INTEGER:
-         // TODO; for now, fall back
+         switch( value->get_type()->get_itype() ) {
+            case LST_FLOATINGPOINT:
+               {
+                  constant_value = new LLScriptIntegerConstant((int32_t)(((LLScriptFloatConstant*)value)->get_value()));
+               }
+               break;
+            case LST_STRING:
+               {
+                  const char *s = ((LLScriptStringConstant*)value)->get_value();
+                  int32_t result = 0;
+                  int iresult;
+                  unsigned uresult;
+                  if ( s[0] == '0' && (s[1] == 'X' || s[1] == 'x') ) {
+                     if (strspn(s + 2, "0123456789ABCDEFabcdef") > 8)
+                        result = -1;
+                     else if (sscanf(s, "%x", &uresult) == 1)
+                        result = (int32_t)uresult;
+                  } else {
+                     // In 64 bits, we need to detect overflow ourselves
+                     int len = strlen(s);
+                     char *buf = new char[len + 1];
+                     char *sgn = new char[len + 1];
+                     buf[0] = 0;
+                     sgn[0] = 0;
+                     if (sscanf(s, " %[+-]%[0-9]", sgn, buf) != 2)
+                        sscanf(s, " %[0-9]", buf);
+                     int buflen = strlen(buf);
+                     int sgnlen = strlen(sgn);
+                     if (sgnlen <= 1 && buflen > 10) {
+                        result = -1;
+                     } else if (sgnlen <= 1 && buflen >= 1) {
+                        if (buflen == 10 && strcmp(buf, "4294967296") >= 0) {
+                           result = -1;
+                        } else if (sscanf(s, "%d", &iresult) == 1) {
+                           result = (int32_t)iresult;
+                        }
+                     }
+                     delete buf;
+                     delete sgn;
+                  }
+                  constant_value = new LLScriptIntegerConstant(result);
+               }
+               break;
+            default:
+               break;
+         }
+         break;
       case LST_VECTOR:
-         // TODO; for now, fall back
       case LST_QUATERNION:
-         // TODO; for now, fall back
+         if ( value->get_type()->get_itype() == LST_STRING ) {
+            const char *s = ((LLScriptStringConstant*)value)->get_value();
+            if ( type->get_itype() == LST_VECTOR ) {
+               float f[3];
+               LLScriptVectorConstant *result = new LLScriptVectorConstant(0.f,0.f,0.f);
+               if ( sscanf(s, "<%f,%f,%f>", &f[0], &f[1], &f[2]) == 3 ) {
+                  result->get_value()->x = f[0];
+                  result->get_value()->y = f[1];
+                  result->get_value()->z = f[2];
+               }
+               constant_value = result;
+            } else {
+               float f[4];
+               LLScriptQuaternionConstant *result = new LLScriptQuaternionConstant(0.f,0.f,0.f,1.f);
+               if ( sscanf(s, "<%f,%f,%f,%f>", &f[0], &f[1], &f[2], &f[3]) == 4 ) {
+                  result->get_value()->x = f[0];
+                  result->get_value()->y = f[1];
+                  result->get_value()->z = f[2];
+                  result->get_value()->s = f[3];
+               }
+               constant_value = result;
+            }
+         }
+         break;
       default:
          break;
    }

@@ -157,13 +157,13 @@ class LLScriptIntegerConstant : public LLScriptConstant {
 
     virtual LLNodeSubType get_node_sub_type() { return NODE_INTEGER_CONSTANT; }
 
-    int get_value() { return value; }
-    int get_is_bool() { return is_bool; }
+    int32_t get_value() { return value; }
+    int     get_is_bool() { return is_bool; }
     virtual LLScriptConstant *operation(int op, LLScriptConstant *other_const, YYLTYPE *lloc);
 
   private:
-    int value;
-    int is_bool;
+    int32_t value;
+    int     is_bool;
 };
 
 
@@ -176,7 +176,7 @@ class LLScriptFloatConstant : public LLScriptConstant {
 
     virtual const char *get_node_name() {
       static char buf[256];
-      sprintf(buf, "float constant: %f", value);
+      sprintf(buf, "float constant: %.9g", value);
       return (const char *)buf;
     }
 
