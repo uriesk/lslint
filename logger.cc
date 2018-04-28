@@ -287,6 +287,7 @@ const char *Logger::error_messages[] = {
    "Lists can't contain lists.",                                      // 10038
    "Label `%s' already defined in this function or event prevents saving"
       " the program",                                                 // 10039
+   "Uninitialized variables can't be included in lists in LSO",       // 10040
 
 };
 
@@ -323,5 +324,7 @@ const char *Logger::warning_messages[] = {
      " Use [%s_var] instead.",                                        // 20021
    "Label `%s' already defined in this function or event may cause"
       " unexpected behaviour (jumps will go to the last label found)",// 20022
+   "Initializing a global key or string using an uninitialized"
+      " variable causes a runtime error when accessing it",           // 20023
 
 };

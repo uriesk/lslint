@@ -44,10 +44,18 @@ FS			(f|F)
 	LLOC_STEP();
 %}
 "//"                { BEGIN COMMENT; }
-<COMMENT,C_COMMENT>"$[E"{N}{5}"]" {
+<COMMENT,C_COMMENT>"$["[EML]{N}{5}"]" {
 		ErrorCode e = (ErrorCode) strtoul( yytext+3, NULL, 10 );
-		LOG( LOG_INFO, yylloc, "Adding assertion for E%d.", (int)e );
-		Logger::get()->add_assertion( yylloc->first_line, e );
+		if ((mono_mode && yytext[2] != 'L') || (!mono_mode && yytext[2] != 'M')) {
+			LOG( LOG_INFO, yylloc, "Adding%s assertion for %d.",
+				yytext[2] == 'L' ? " LSO-only" :
+				yytext[2] == 'M' ? " Mono-only" : "", (int)e );
+			Logger::get()->add_assertion( yylloc->first_line, e );
+		} else {
+			LOG( LOG_INFO, yylloc, "Ignoring%s assertion for %d.",
+				yytext[2] == 'L' ? " LSO-only" :
+				yytext[2] == 'M' ? " Mono-only" : "", (int)e );
+		}
 	}
 <COMMENT>.			{ /* eat comments */ }
 <COMMENT>\n			{ BEGIN 0; LLOC_LINES(1); LLOC_STEP(); }
@@ -177,7 +185,7 @@ char *parse_string(char *input, int *last_line, int *last_column) {
 	while ( *yp ) {
 		if ( *yp == '\\' ) {
 			++*last_column;
-			switch ( *++yp ) { 
+			switch ( *++yp ) {
 					case 'n':  *sp++ = '\n'; break;
 					case 't':
 						*sp++ = ' ';

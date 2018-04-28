@@ -34,16 +34,21 @@ string good_s00;
 string good_s01 = "ok";
 string good_s02 = L"x";      // $[E20019] prepends quote, like "x
 string good_s03 = good_s01;
-string good_s04 = good_s00;  // TODO: Should emit warning in LSO
+string good_s04 = good_s00;  // $[L20023] can cause runtime error
 key good_k00;
-string good_s05 = good_k00;  // TODO: Should emit warning in LSO
+string good_s05 = good_k00;  // $[L20023] can cause runtime error
 key good_k01 = "ok";
 string good_s06 = good_k01;
 key good_k02 = L"x";         // $[E20019]
-key good_k03 = good_s00;     // TODO: Should emit warning in LSO
+key good_k03 = good_s00;     // $[L20023] can cause runtime error
 key good_k04 = good_s01;
 key good_k05 = good_k01;
-key good_k06 = good_k00;     // TODO: Should emit warning in LSO
+key good_k06 =
+               good_k00      // $[L20023] can cause runtime error
+                       ;
+list lso_bad_l01 = [<good_i00, good_f00, 1>,
+                    good_s00 // $[L10040] uninitialized in lists
+                            ];
 
 vector good_v00;
 vector good_v01 = <0, 0, 0>;
@@ -82,7 +87,7 @@ vector bad_r01 = -r00;       // $[E10020]
 vector bad_r02 = <good_r01.x, good_r01.y, good_r01.z, good_r01.s>; // $[E10020]
 list bad_l01 = [-TRUE];      // $[E10020]
 list bad_l02 = [-<1,1,1>];   // $[E10020]
-list bad_l03 = [1,[2,3],4];  // $[E10020] TODO: add "Lists can't contain lists"
+list bad_l03 = [1,[2,3],4];  // $[E10020]
 list bad_l04 = -[1];         // $[E10020] (dubious - E10002 would be more appropriate here)
 list bad_l05 = [good_v01.x]; // $[E10020]
 
@@ -161,6 +166,7 @@ good_v00; good_v01; good_v02; good_v03;
 good_l00; good_l01; good_l02;
 
 bad_v02;
+lso_bad_l01;
 llSetPrimitiveParams(I_am_also_used);
 
 }}

@@ -782,6 +782,31 @@ void LLScriptGlobalVariable::determine_type() {
       ERROR( HERE, E_WRONG_TYPE_IN_ASSIGNMENT, id->get_type()->get_node_name(),
             id->get_name(), node->get_type()->get_node_name() );
    }
+
+   if (!mono_mode) {
+      LST_TYPE type = id->get_type()->get_itype();
+      LLASTNode *val_node = get_child(1)->get_child(0);
+
+      if (type == LST_STRING || type == LST_KEY) {
+         if (val_node->get_node_type() == NODE_IDENTIFIER && !((LLScriptIdentifier*)val_node)->get_symbol()->is_initialized()) {
+            ERROR( IN(val_node), W_UNINITIALIZED_VAR_IN_STR_KEY );
+         } else {
+            id->get_symbol()->set_initialized();
+         }
+      } else {
+         id->get_symbol()->set_initialized();
+         if (val_node->get_node_type() == NODE_CONSTANT && val_node->get_node_sub_type() == NODE_LIST_CONSTANT) {
+            LLASTNode *elem = ((LLScriptListConstant *)val_node)->get_children();
+            // Check every element to see if one of them is an uninitialized variable
+            while (elem && elem->get_node_type() == NODE_SIMPLE_ASSIGNABLE) {
+               if (elem->get_child(0)->get_node_type() == NODE_IDENTIFIER && ((LLScriptIdentifier *)elem->get_child(0))->get_symbol() && !((LLScriptIdentifier *)elem->get_child(0))->get_symbol()->is_initialized()) {
+                  ERROR( IN(elem->get_child(0)), E_UNINITIALIZED_VAR_IN_LIST );
+               }
+               elem = elem->get_next();
+            }
+         }
+      }
+   }
 }
 
 void LLScriptDeclaration::determine_type() {
