@@ -87,7 +87,8 @@ enum ErrorCode {
     E_DECLARATION_NOT_ALLOWED,         // 10036
     E_GOD_MODE_FUNCTION,               // 10037
     E_LIST_IN_LIST,                    // 10038
-    E_DUPLICATE_LABEL_MONO,            // 10040
+    E_DUPLICATE_LABEL_MONO,            // 10039
+    E_UNINITIALIZED_VAR_IN_LIST,       // 10040
     E_LAST
 
 
@@ -116,6 +117,7 @@ enum ErrorCode {
     W_PRINT,                           // 20020
     W_KEY_OR_STR_TO_LIST,              // 20021
     W_DUPLICATE_LABEL_LSO,             // 20022
+    W_UNINITIALIZED_VAR_IN_STR_KEY,    // 20023
     W_LAST
 
 };

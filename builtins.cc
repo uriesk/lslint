@@ -152,6 +152,7 @@ void LLScriptScript::define_builtins() {
          define_symbol(symbol);
          symbol->set_declared();
          symbol->set_global();
+         symbol->set_initialized();
       }
       else if (!strcmp(ret_type, "event")) {
          name     = strtok(NULL, " (),");

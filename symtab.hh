@@ -12,12 +12,12 @@ class LLScriptSymbol {
     LLScriptSymbol( const char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, YYLTYPE *lloc, class LLScriptFunctionDec *function_decl = NULL )
       : name(name), type(type), symbol_type(symbol_type), sub_type(sub_type), lloc(*lloc), function_decl(function_decl),
       constant_value(NULL), references(0), assignments(0), cur_references(0),
-      declared(false), global(false) {};
+      declared(false), global(false), initialized(false) {};
 
     LLScriptSymbol( const char *name, class LLScriptType *type, LLSymbolType symbol_type, LLSymbolSubType sub_type, class LLScriptFunctionDec *function_decl = NULL )
       : name(name), type(type), symbol_type(symbol_type), sub_type(sub_type), function_decl(function_decl),
       constant_value(NULL), references(0), assignments(0), cur_references(0),
-      declared(false), global(false) {
+      declared(false), global(false), initialized(false) {
           static const YYLTYPE zero_lloc = {};
           lloc = zero_lloc;
     };
@@ -34,6 +34,8 @@ class LLScriptSymbol {
     void                 set_declared()     { declared = true; }
     bool                 is_global()        { return global; }
     void                 set_global()       { global = true; }
+    bool                 is_initialized()   { return initialized; }
+    void                 set_initialized()  { initialized = true; }
 
     LLSymbolType         get_symbol_type()  { return symbol_type; }
     LLSymbolSubType      get_sub_type()     { return sub_type;    }
@@ -68,6 +70,7 @@ class LLScriptSymbol {
     int                  cur_references;        // how many times the current const_value was referred to
     bool                 declared;              // was it declared before?
     bool                 global;                // is it a global symbol?
+    bool                 initialized;           // (for globals) is there an initializer?
 };
 
 class LLScriptSymbolTable {
