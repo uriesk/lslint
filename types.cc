@@ -60,7 +60,6 @@ const static int operator_result_table[][4] = {
    { '+',        LST_FLOATINGPOINT,  LST_INTEGER,        LST_FLOATINGPOINT   },
    { '+',        LST_FLOATINGPOINT,  LST_FLOATINGPOINT,  LST_FLOATINGPOINT   },
    { '+',        LST_STRING,         LST_STRING,         LST_STRING          },
-   { '+',        LST_KEY,            LST_STRING,         LST_KEY             },
    { '+',        LST_VECTOR,         LST_VECTOR,         LST_VECTOR          },
    { '+',        LST_QUATERNION,     LST_QUATERNION,     LST_QUATERNION      },
    { '+',        LST_LIST,           LST_ANY,            LST_LIST            },
