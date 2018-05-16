@@ -382,7 +382,24 @@ void LLScriptExpression::determine_type() {
       type = get_child(0)->get_type()->get_result_type( operation, get_child(1) ? get_child(1)->get_type() : NULL );
       if ( type == NULL ) {
          ERROR( HERE, E_INVALID_OPERATOR, get_child(0)->get_type()->get_node_name(), operation_str(operation), get_child(1) ? get_child(1)->get_type()->get_node_name() : "" );
-         type = get_child(0)->get_type();
+         // Assign a reasonable type based on operation
+         LST_TYPE t = operation == EQ ? LST_INTEGER :
+            operation == NEQ ? LST_INTEGER :
+            operation == '<' ? LST_INTEGER :
+            operation == '>' ? LST_INTEGER :
+            operation == GEQ ? LST_INTEGER :
+            operation == LEQ ? LST_INTEGER :
+            operation == '!' ? LST_INTEGER :
+            operation == '~' ? LST_INTEGER :
+            operation == '^' ? LST_INTEGER :
+            operation == '&' ? LST_INTEGER :
+            operation == '|' ? LST_INTEGER :
+            operation == SHIFT_LEFT ? LST_INTEGER :
+            operation == SHIFT_RIGHT ? LST_INTEGER :
+            operation == BOOLEAN_AND ? LST_INTEGER :
+            operation == BOOLEAN_OR ? LST_INTEGER :
+            LST_NULL;
+         type = t == LST_NULL ? get_child(0)->get_type() : new LLScriptType(t);
       } else {
          if ( operation == '=' || operation == INC_OP || operation == DEC_OP ) {
             // unused variable // LLASTNode *last_node     = this;

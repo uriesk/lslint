@@ -152,7 +152,6 @@ LLScriptConstant *LLScriptKeyConstant::operation(int operation, LLScriptConstant
       case NODE_STRING_CONSTANT: {
                                     const char *ov = ((LLScriptStringConstant*)other_const)->get_value();
                                     switch (operation) {
-                                       case '+':           return new LLScriptStringConstant( join_string(value, ov) );
                                        case EQ:            return new LLScriptIntegerConstant( !strcmp(value, ov) );
                                        case NEQ:
                                           {
